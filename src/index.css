@@ -1,0 +1,91 @@
+@import 'tailwindcss';
+
+/*
+  Nordic-minimal design tokens.
+
+  Two hard rules, both driven by the mainland-China audience:
+   1. No Google Fonts and no third-party CDN — those are blocked and will hang
+      page load until timeout.
+   2. No CJK webfont — Chinese font files are 3–10 MB. Chinese text uses the
+      system stack; only the Latin display face is ever self-hosted.
+
+  Palette is provisional until the couple's logo lands (see plan, Phase 0).
+*/
+@theme {
+  /* Paper and ink */
+  --color-paper: #faf9f7;
+  --color-paper-raised: #ffffff;
+  --color-paper-sunk: #f2f0ec;
+  --color-ink: #23211e;
+  --color-ink-muted: #6b6660;
+  --color-ink-faint: #9c968e;
+  --color-rule: #e3dfd8;
+
+  /* One muted accent, plus a warm secondary for the camera/bingo surfaces */
+  --color-sage: #7d8c7c;
+  --color-sage-soft: #e8ede7;
+  --color-clay: #b08968;
+  --color-clay-soft: #f2e9e1;
+
+  /* Feedback */
+  --color-danger: #a4553f;
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Helvetica Neue', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', sans-serif;
+  --font-display: ui-serif, Georgia, 'Songti SC', 'STSong', serif;
+
+  --radius-card: 0.75rem;
+}
+
+@layer base {
+  html {
+    /* Stops iOS Safari inflating text in landscape */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* Guests hold this one-handed on a phone all weekend */
+    overscroll-behavior-y: none;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  /* Chinese renders better without the Latin display face's tight tracking */
+  :lang(zh) h1, :lang(zh) h2, :lang(zh) h3 {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  button, input, textarea, select {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* Tap targets: moving crowds, one hand holding a drink */
+  button, a[role='button'] {
+    touch-action: manipulation;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@utility safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
