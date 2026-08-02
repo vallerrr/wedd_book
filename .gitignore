@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Guest list and invite codes. THIS REPO IS PUBLIC — a committed code lets
+# anyone sign in as that guest, spend their photo quota, and read their bingo
+# answers after review night. Everything under private/ stays local.
+/private/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
