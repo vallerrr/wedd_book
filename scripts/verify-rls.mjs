@@ -142,7 +142,10 @@ async function main() {
   console.log('\nBlind mode (disposable)')
   {
     const { data } = await a.client.from('photos').select('id').eq('kind', 'disposable')
-    check(`the owner cannot see their own disposable photos (saw ${data?.length ?? 0})`, data?.length === 0)
+    check(
+      `the owner cannot see their own disposable photos (saw ${data?.length ?? 0})`,
+      data?.length === 0,
+    )
   }
   {
     const { data } = await b.client.from('photos').select('id').eq('kind', 'disposable')
@@ -156,14 +159,21 @@ async function main() {
 
     await setSettings({ gallery_visible: true })
     const { data: after } = await a.client.from('photos').select('id').eq('kind', 'disposable')
-    check(`reveal + gallery open makes them visible (saw ${after?.length ?? 0})`, (after?.length ?? 0) > 0)
+    check(
+      `reveal + gallery open makes them visible (saw ${after?.length ?? 0})`,
+      (after?.length ?? 0) > 0,
+    )
 
     await setSettings({ gallery_visible: false, disposable_reveal_at: null })
   }
 
   // ---- bingo --------------------------------------------------------------
   console.log('\nBingo (private until review night)')
-  const { data: q } = await admin.from('bingo_questions').select('id, position').eq('position', 1).single()
+  const { data: q } = await admin
+    .from('bingo_questions')
+    .select('id, position')
+    .eq('position', 1)
+    .single()
   {
     await a.client.rpc('upsert_bingo_photo', {
       p_question_id: q.id,
@@ -296,7 +306,10 @@ async function main() {
   {
     const anon = createClient(API, ANON, { auth: { persistSession: false } })
     const { data, error } = await anon.from('program_days').select('day_date')
-    check(`the itinerary is readable with no session (saw ${data?.length ?? 0} days)`, !error && data.length === 3)
+    check(
+      `the itinerary is readable with no session (saw ${data?.length ?? 0} days)`,
+      !error && data.length === 3,
+    )
 
     const { data: photos } = await anon.from('photos').select('id')
     check('...but photos are not', (photos?.length ?? 0) === 0)

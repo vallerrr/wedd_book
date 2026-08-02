@@ -30,12 +30,19 @@ export const strings = {
     'welcome.submit': '进入',
     'welcome.viewProgram': '先看看行程',
     'welcome.invalidCode': '邀请码不正确，请再确认一下',
+    'welcome.codeUsed': '这个邀请码已经被使用了，请联系新人',
     'welcome.tooManyAttempts': '尝试次数过多，请联系新人',
+    'welcome.offline': '连不上网络，请检查后重试',
+    'welcome.unknown': '出了点问题，请稍后再试',
 
     'join.greeting': '你好，{name}',
     'join.confirm': '是你吗？',
     'join.yes': '是我',
     'join.no': '不是，重新输入',
+    'join.anonymousHint': '之后每张照片都可以单独修改',
+
+    'home.hello': '欢迎回来',
+    'home.bingoHint': '找人拍照',
 
     'nav.home': '首页',
     'nav.camera': '相机',
@@ -76,8 +83,11 @@ export const strings = {
     'gallery.all': '全部',
 
     'me.title': '我的',
+    'me.name': '名字',
+    'me.language': '语言',
     'me.anonymousDefault': '默认匿名发布',
     'me.table': '座位',
+    'me.signOut': '退出登录',
   },
 
   en: {
@@ -94,7 +104,7 @@ export const strings = {
 
     'wechat.title': 'Please open in your browser',
     'wechat.body':
-      "WeChat's built-in browser can't use the camera. Tap ··· in the top right, then \"Open in Browser\".",
+      'WeChat\'s built-in browser can\'t use the camera. Tap ··· in the top right, then "Open in Browser".',
     'wechat.programOnly': 'If you just want the itinerary, you can stay here.',
     'wechat.viewProgram': 'View itinerary',
 
@@ -104,12 +114,19 @@ export const strings = {
     'welcome.submit': 'Enter',
     'welcome.viewProgram': 'Just show me the itinerary',
     'welcome.invalidCode': "That code doesn't look right — mind checking it?",
+    'welcome.codeUsed': 'That code has already been used. Please ask the couple.',
     'welcome.tooManyAttempts': 'Too many attempts. Please ask the couple.',
+    'welcome.offline': "Can't reach the network — check your connection and try again",
+    'welcome.unknown': 'Something went wrong. Please try again in a moment.',
 
     'join.greeting': 'Hello, {name}',
     'join.confirm': 'Is this you?',
     'join.yes': "That's me",
     'join.no': 'No, re-enter code',
+    'join.anonymousHint': 'You can change this per photo later',
+
+    'home.hello': 'Welcome back',
+    'home.bingoHint': 'Find people, take photos',
 
     'nav.home': 'Home',
     'nav.camera': 'Camera',
@@ -151,8 +168,11 @@ export const strings = {
     'gallery.all': 'Everyone',
 
     'me.title': 'You',
+    'me.name': 'Name',
+    'me.language': 'Language',
     'me.anonymousDefault': 'Post anonymously by default',
     'me.table': 'Table',
+    'me.signOut': 'Sign out',
   },
 } as const
 

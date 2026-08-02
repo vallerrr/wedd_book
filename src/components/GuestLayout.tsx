@@ -7,7 +7,11 @@ const BARE_ROUTES = new Set(['/', '/join'])
 
 const TABS: { to: string; key: StringKey; icon: string }[] = [
   { to: '/home', key: 'nav.home', icon: 'M3 10.5 12 3l9 7.5V21H3z' },
-  { to: '/camera', key: 'nav.camera', icon: 'M3 7h4l2-2h6l2 2h4v12H3zM12 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z' },
+  {
+    to: '/camera',
+    key: 'nav.camera',
+    icon: 'M3 7h4l2-2h6l2 2h4v12H3zM12 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
+  },
   { to: '/bingo', key: 'nav.bingo', icon: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z' },
   { to: '/program', key: 'nav.program', icon: 'M5 4h14v16H5zM8 8h8M8 12h8M8 16h5' },
   { to: '/gallery', key: 'nav.gallery', icon: 'M3 5h18v14H3zM3 15l5-5 4 4 3-3 6 6' },
