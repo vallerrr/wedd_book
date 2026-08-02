@@ -8,16 +8,29 @@ opens when the couple decides.
 
 ## Where this is now
 
-**Phase 0 done.** The app scaffold builds and the data layer is complete and tested.
-Nothing is deployed yet, and no guest-facing feature is wired to the database.
+**Phases 0 and 1 done.** Deployed, with guests able to redeem invite codes and the
+couple able to manage the list and print QR cards. Camera, bingo and gallery are still
+stubs.
 
-Three things are blocked on accounts and need a human:
+Two things need a human:
 
-1. **Create the Supabase project** in Tokyo (`ap-northeast-1`), then
-   `supabase link`, `supabase db push`, `supabase config push`, and fill `.env.local`.
-   The `config push` matters — it carries the raised anonymous sign-in rate limit.
-2. **Create the Cloudflare Pages project** and point it at this repo.
-3. **`gh auth login`**, if the scaffold PR should be opened rather than merged locally.
+1. **Create a production admin account.** The admin panel is gated on a row in
+   `admin_profiles`, and there isn't one yet on the live project. In the Supabase
+   dashboard: Authentication → Users → Add user (email + password, confirm it), then in
+   the SQL Editor:
+   ```sql
+   insert into admin_profiles (user_id)
+   select id from auth.users where email = 'you@example.com';
+   ```
+2. **Load the guest list.** `node scripts/make-guests.mjs`, then paste
+   `private/insert-guests.sql` into the SQL Editor.
+
+### Local development
+
+`npm run dev` talks to the local Docker stack, not production, because
+`.env.development.local` overrides `.env.local` in dev. That keeps testing from burning
+real invite codes. To create a local admin fixture after `npm run db:reset`, add a user
+via the local Auth admin API and insert them into `admin_profiles`.
 
 ### Build phases
 
@@ -26,8 +39,8 @@ Guests start using the app on **26 September**, so the ship date is **~20 Septem
 | # | Window | Scope | Status |
 |---|---|---|---|
 | 0 | Aug 1–7 | Scaffold, schema, RLS, RPCs, verification harness | ✅ done |
-| 1 | Aug 8–14 | Identity: redeem flow, admin auth, guest CRUD, printable QR sheet | next |
-| 2 | Aug 15–24 | Programme: public, offline, seeded with the real itinerary | |
+| 1 | Aug 8–14 | Identity: redeem flow, admin auth, guest CRUD, printable QR sheet | ✅ done |
+| 2 | Aug 15–24 | Programme: public, offline, seeded with the real itinerary | next |
 | 3 | Aug 25–Sep 5 | Camera: blind capture, compression, IndexedDB queue, quota UI | |
 | 4 | Sep 6–11 | Bingo: per-guest private answers, replace flow, review-night view | |
 | 5 | Sep 12–16 | Gallery: reveal, signed thumbnails, anonymity toggle | |
