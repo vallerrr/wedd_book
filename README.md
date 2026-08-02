@@ -6,6 +6,49 @@ Instead of a ceremony, the couple is hosting a three-day trip. This app carries 
 itinerary, an icebreaker bingo game, a blind "disposable camera", and a gallery that
 opens when the couple decides.
 
+## Where this is now
+
+**Phase 0 done.** The app scaffold builds and the data layer is complete and tested.
+Nothing is deployed yet, and no guest-facing feature is wired to the database.
+
+Three things are blocked on accounts and need a human:
+
+1. **Create the Supabase project** in Tokyo (`ap-northeast-1`), then
+   `supabase link`, `supabase db push`, `supabase config push`, and fill `.env.local`.
+   The `config push` matters — it carries the raised anonymous sign-in rate limit.
+2. **Create the Cloudflare Pages project** and point it at this repo.
+3. **`gh auth login`**, if the scaffold PR should be opened rather than merged locally.
+
+### Build phases
+
+Guests start using the app on **26 September**, so the ship date is **~20 September**.
+
+| # | Window | Scope | Status |
+|---|---|---|---|
+| 0 | Aug 1–7 | Scaffold, schema, RLS, RPCs, verification harness | ✅ done |
+| 1 | Aug 8–14 | Identity: redeem flow, admin auth, guest CRUD, printable QR sheet | next |
+| 2 | Aug 15–24 | Programme: public, offline, seeded with the real itinerary | |
+| 3 | Aug 25–Sep 5 | Camera: blind capture, compression, IndexedDB queue, quota UI | |
+| 4 | Sep 6–11 | Bingo: per-guest private answers, replace flow, review-night view | |
+| 5 | Sep 12–16 | Gallery: reveal, signed thumbnails, anonymity toggle | |
+| 6 | Sep 12–16 | Custom domains live (~Sep 7); optional extras only if the above is signed off | |
+| 7 | Sep 17–20 | Freeze: real-device tests in-region, Supabase Pro, rehearsal | |
+
+Programme ships early on purpose — it's the only feature with value *before* the trip,
+and it doubles as a real China-reachability test seven weeks out instead of on the day.
+
+Priorities if time gets tight: the five features in the table above are the commitment.
+The slideshow, bulk-export UI and guestbook are droppable, in that order.
+
+### Still needed from the couple
+
+- Logo and brand images → `public/brand/` (the palette is provisional until then)
+- Programme photos → `public/program/`
+- The guest list (~20 names), to generate invite codes and the QR sheet
+- Qianxi banquet hotel name and address
+- Exact reveal times — bingo review ≈ 27 Sep afternoon, disposable reveal ≈ after the
+  banquet on the 28th. Both are editable in the admin panel, so neither blocks anything.
+
 ## What it does
 
 | Feature | Notes |
