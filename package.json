@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "db:reset": "supabase db reset",
     "types:gen": "supabase gen types typescript --local > src/lib/database.types.ts",
-    "verify": "node scripts/verify-rls.mjs",
+    "verify": "node scripts/verify-rls.mjs && node scripts/verify-admin.mjs",
     "deploy": "npm run build && npx wrangler deploy"
   },
   "dependencies": {

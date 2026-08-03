@@ -421,6 +421,77 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_create_guest: {
+        Args: { p_display_name: string }
+        Returns: {
+          auth_user_id: string | null
+          created_at: string
+          default_anonymous: boolean
+          display_name: string
+          failed_attempts: number
+          id: string
+          invite_code: string
+          last_seen_at: string | null
+          locale: string
+          redeemed_at: string | null
+          table_number: string | null
+        }
+        SetofOptions: {
+          from: '*'
+          to: 'guests'
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_delete_guest: { Args: { p_guest_id: string }; Returns: undefined }
+      admin_reset_guest: {
+        Args: { p_guest_id: string }
+        Returns: {
+          auth_user_id: string | null
+          created_at: string
+          default_anonymous: boolean
+          display_name: string
+          failed_attempts: number
+          id: string
+          invite_code: string
+          last_seen_at: string | null
+          locale: string
+          redeemed_at: string | null
+          table_number: string | null
+        }
+        SetofOptions: {
+          from: '*'
+          to: 'guests'
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_guest: {
+        Args: {
+          p_display_name?: string
+          p_guest_id: string
+          p_table_number?: string
+        }
+        Returns: {
+          auth_user_id: string | null
+          created_at: string
+          default_anonymous: boolean
+          display_name: string
+          failed_attempts: number
+          id: string
+          invite_code: string
+          last_seen_at: string | null
+          locale: string
+          redeemed_at: string | null
+          table_number: string | null
+        }
+        SetofOptions: {
+          from: '*'
+          to: 'guests'
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       can_view_photo: {
         Args: { p: Database['public']['Tables']['photos']['Row'] }
         Returns: boolean
@@ -460,9 +531,11 @@ export type Database = {
         }
       }
       current_guest_id: { Args: never; Returns: string }
+      gen_invite_code: { Args: never; Returns: string }
       is_admin: { Args: never; Returns: boolean }
       mark_photo_ready: { Args: { p_photo_id: string }; Returns: undefined }
       my_credits_remaining: { Args: never; Returns: number }
+      owns_photo_path: { Args: { p_path: string }; Returns: boolean }
       redeem_invite_code: {
         Args: { p_code: string }
         Returns: {

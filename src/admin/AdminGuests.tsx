@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { generateCode } from '@/lib/codes'
 import type { Guest } from '@/lib/auth'
-
-const UNIQUE_VIOLATION = '23505'
 
 export function AdminGuests() {
   const [guests, setGuests] = useState<Guest[]>([])
@@ -25,47 +22,58 @@ export function AdminGuests() {
     void load()
   }, [load])
 
-  async function addGuest(displayName: string) {
-    // Codes are random and short, so a collision is unlikely but possible.
-    // Retry on the unique violation rather than pre-checking, which would
-    // race against another admin adding someone at the same moment.
-    for (let attempt = 0; attempt < 12; attempt++) {
-      const { error } = await supabase
-        .from('guests')
-        .insert({ invite_code: generateCode(), display_name: displayName })
-      if (!error) return null
-      if (error.code !== UNIQUE_VIOLATION) return error.message
-    }
-    return 'Could not find a free invite code after several tries.'
-  }
-
   async function onAdd(e: React.FormEvent) {
     e.preventDefault()
     const trimmed = name.trim()
     if (!trimmed) return
     setBusy(true)
     setError(null)
-    // "A & B" is two people, matching scripts/make-guests.mjs.
+
+    // "A & B" is two people, matching scripts/make-guests.mjs. The invite code
+    // is generated server-side, so uniqueness is checked inside the same
+    // transaction as the insert rather than by retrying from the browser.
     for (const person of trimmed
       .split('&')
       .map((s) => s.trim())
       .filter(Boolean)) {
-      const err = await addGuest(person)
-      if (err) {
-        setError(err)
+      const { error } = await supabase.rpc('admin_create_guest', { p_display_name: person })
+      if (error) {
+        setError(error.message)
         break
       }
     }
+
     setName('')
     await load()
     setBusy(false)
   }
 
   async function setTable(id: string, table: string) {
-    await supabase
-      .from('guests')
-      .update({ table_number: table || null })
-      .eq('id', id)
+    const { error } = await supabase.rpc('admin_update_guest', {
+      p_guest_id: id,
+      p_table_number: table,
+    })
+    if (error) setError(error.message)
+    await load()
+  }
+
+  async function reset(guest: Guest) {
+    if (
+      !confirm(
+        `Un-redeem ${guest.display_name}? Their code ${guest.invite_code} becomes usable again.`,
+      )
+    )
+      return
+    const { error } = await supabase.rpc('admin_reset_guest', { p_guest_id: guest.id })
+    if (error) setError(error.message)
+    await load()
+  }
+
+  async function remove(guest: Guest) {
+    if (!confirm(`Delete ${guest.display_name}? Their photos go too. This cannot be undone.`))
+      return
+    const { error } = await supabase.rpc('admin_delete_guest', { p_guest_id: guest.id })
+    if (error) setError(error.message)
     await load()
   }
 
@@ -112,6 +120,7 @@ export function AdminGuests() {
             <th className="pb-2 font-normal">Code</th>
             <th className="pb-2 font-normal">Table</th>
             <th className="pb-2 font-normal">Status</th>
+            <th className="pb-2" />
           </tr>
         </thead>
         <tbody className="divide-y divide-rule">
@@ -129,6 +138,23 @@ export function AdminGuests() {
                 />
               </td>
               <td className="py-2.5 text-ink-faint">{g.redeemed_at ? 'redeemed' : 'not yet'}</td>
+              <td className="py-2.5 text-right whitespace-nowrap">
+                {g.redeemed_at && (
+                  <button
+                    onClick={() => void reset(g)}
+                    className="text-ink-faint underline underline-offset-4 hover:text-ink"
+                    title="Free the code so it can be redeemed again"
+                  >
+                    reset
+                  </button>
+                )}
+                <button
+                  onClick={() => void remove(g)}
+                  className="ml-3 text-ink-faint underline underline-offset-4 hover:text-danger"
+                >
+                  delete
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
