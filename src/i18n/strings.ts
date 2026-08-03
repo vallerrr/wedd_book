@@ -54,6 +54,7 @@ export const strings = {
     'program.day': '第 {n} 天',
     'program.openMap': '在地图中打开',
     'program.hotel': '酒店',
+    'program.empty': '这一天的安排还在整理中～',
 
     'camera.title': '一次性相机',
     'camera.blindHint': '看不到取景画面 —— 就像真的一次性相机。拍完当天不会显示，之后统一揭晓。',
@@ -138,6 +139,7 @@ export const strings = {
     'program.day': 'Day {n}',
     'program.openMap': 'Open in maps',
     'program.hotel': 'Hotel',
+    'program.empty': 'This day’s plan is still being written.',
 
     'camera.title': 'Disposable camera',
     'camera.blindHint':

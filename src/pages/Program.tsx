@@ -175,11 +175,17 @@ export function Program() {
             </div>
           )}
 
-          <ul className="mt-6">
-            {itemsForDay.map((item) => (
-              <Item key={item.id} item={item} />
-            ))}
-          </ul>
+          {itemsForDay.length > 0 ? (
+            <ul className="mt-6">
+              {itemsForDay.map((item) => (
+                <Item key={item.id} item={item} />
+              ))}
+            </ul>
+          ) : (
+            // Reachable before the content is seeded, or if a day is emptied.
+            // Better than a page that just stops.
+            <p className="mt-8 text-sm text-ink-faint">{t('program.empty')}</p>
+          )}
 
           {outro.map((b) => (
             <Block key={b.key} block={b} />
