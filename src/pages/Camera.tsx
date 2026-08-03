@@ -50,6 +50,32 @@ export default function Camera() {
     }
   }, [])
 
+  // iOS fixes a stream's orientation at the moment it starts and never
+  // re-orients it, so opening the camera in portrait and then turning the
+  // phone sideways produced a landscape scene rotated 90° inside a portrait
+  // frame. Re-acquiring the stream makes the OS hand back a correctly
+  // oriented buffer, which beats trying to rotate the canvas ourselves.
+  // There is no preview, so the restart is invisible.
+  useEffect(() => {
+    if (state !== 'ready') return
+
+    let timer: number | undefined
+    const onRotate = () => {
+      window.clearTimeout(timer)
+      // Rotation fires repeatedly through the animation; wait for it to settle.
+      timer = window.setTimeout(() => void startCamera(facing), 350)
+    }
+
+    screen.orientation?.addEventListener('change', onRotate)
+    window.addEventListener('orientationchange', onRotate)
+    return () => {
+      window.clearTimeout(timer)
+      screen.orientation?.removeEventListener('change', onRotate)
+      window.removeEventListener('orientationchange', onRotate)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, facing])
+
   async function startCamera(which: 'environment' | 'user' = facing) {
     setState('starting')
     // Release the previous camera first — a phone will not hand out the front
@@ -162,6 +188,14 @@ export default function Camera() {
 
         {/* Viewfinder frame, deliberately empty. */}
         <div className="absolute inset-5 rounded border border-paper-raised/25" />
+
+        {/* Which lens is live. With nothing on screen there is otherwise no
+            way to tell whether you are about to shoot yourself or the room. */}
+        {state === 'ready' && (
+          <span className="absolute top-8 left-8 rounded-full border border-paper-raised/25 px-2.5 py-1 text-[11px] tracking-wide text-paper-raised/60">
+            {facing === 'user' ? t('camera.front') : t('camera.back')}
+          </span>
+        )}
         <div className="absolute inset-0 flex items-center justify-center px-10 text-center">
           <p className="text-sm leading-relaxed text-paper-raised/55">
             {state === 'ready' ? t('camera.blindHint') : t('camera.permissionBody')}
@@ -239,19 +273,14 @@ export default function Camera() {
                   className="pointer-events-none absolute top-1/2 left-full ml-1 flex w-24 -translate-y-1/2 items-center gap-1 text-ink-faint"
                   aria-hidden
                 >
-                  <svg viewBox="0 0 40 34" className="h-8 w-8 shrink-0" fill="none">
+                  {/* Just the curve — the arrowhead read as clutter at this
+                      size and never quite lined up with the button. */}
+                  <svg viewBox="0 0 40 26" className="h-7 w-8 shrink-0" fill="none">
                     <path
-                      d="M37 6C30 3 14 3 6 14"
+                      d="M38 5C30 1 12 3 3 17"
                       stroke="currentColor"
                       strokeWidth="1.3"
                       strokeLinecap="round"
-                    />
-                    <path
-                      d="M4 18l1.4-5.2 5 2"
-                      stroke="currentColor"
-                      strokeWidth="1.3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
                     />
                   </svg>
                   <span className="text-xs leading-snug">{t('camera.tapHint')}</span>
