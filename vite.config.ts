@@ -12,6 +12,8 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      // We register manually in src/lib/pwa.ts to control reload-on-update.
+      injectRegister: null,
       includeAssets: ['favicon.svg', 'brand/**/*', 'program/**/*'],
       manifest: {
         name: '婚礼小册 Wedd Book',

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { configError } from './lib/supabase'
+import { setupPWA } from './lib/pwa'
 
 const root = createRoot(document.getElementById('root')!)
 
@@ -19,6 +20,7 @@ if (configError) {
     </div>,
   )
 } else {
+  setupPWA()
   root.render(
     <StrictMode>
       <App />
