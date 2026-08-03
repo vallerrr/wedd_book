@@ -12,9 +12,7 @@ const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
  * Report it instead and let main.tsx render something readable.
  */
 export const configError =
-  !url || !anonKey
-    ? 'Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY at build time.'
-    : null
+  !url || !anonKey ? 'Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY at build time.' : null
 
 export const supabase = createClient<Database>(
   url || 'https://missing.invalid',

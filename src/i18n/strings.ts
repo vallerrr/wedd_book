@@ -65,7 +65,8 @@ export const strings = {
     'camera.saved': '已保存',
     'camera.permissionTitle': '需要相机权限',
     'camera.permissionBody': '接下来浏览器会询问相机权限，请选择「允许」。',
-    'camera.permissionDenied': '没有相机权限，可以改为从相册上传。',
+    'camera.permissionDenied': '没有相机权限，可以用系统相机拍，或从相册上传。',
+    'camera.queued': '{n} 张待上传，有网时会自动同步',
 
     'bingo.title': '宾果破冰',
     'bingo.subtitle': '找到答案对应的人，拍张合照',
@@ -151,7 +152,9 @@ export const strings = {
     'camera.saved': 'Saved',
     'camera.permissionTitle': 'Camera access needed',
     'camera.permissionBody': 'Your browser will ask for camera permission next — please allow it.',
-    'camera.permissionDenied': 'No camera access. You can upload from your library instead.',
+    'camera.permissionDenied':
+      'No in-app camera. You can use your phone camera or upload from your library.',
+    'camera.queued': '{n} waiting to upload — they’ll sync when you have signal',
 
     'bingo.title': 'Icebreaker bingo',
     'bingo.subtitle': 'Find the person each answer points to, then take a photo together',

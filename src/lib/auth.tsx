@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { supabase } from './supabase'
+import { startQueueWatcher } from './uploadQueue'
 import type { Database } from './database.types'
 
 export type Guest = Database['public']['Tables']['guests']['Row']
@@ -31,6 +32,25 @@ type AuthValue = AuthState & {
 
 const AuthContext = createContext<AuthValue | null>(null)
 
+const GUEST_CACHE_KEY = 'wb.guest.v1'
+
+function cacheGuest(guest: Guest) {
+  try {
+    localStorage.setItem(GUEST_CACHE_KEY, JSON.stringify(guest))
+  } catch {
+    // Private mode — the app still works while there is a connection.
+  }
+}
+
+function readCachedGuest(): Guest | null {
+  try {
+    const raw = localStorage.getItem(GUEST_CACHE_KEY)
+    return raw ? (JSON.parse(raw) as Guest) : null
+  } catch {
+    return null
+  }
+}
+
 /** Map a Postgres exception from redeem_invite_code onto something we can show. */
 function toRedeemError(message: string | undefined): RedeemError {
   const m = message ?? ''
@@ -42,9 +62,13 @@ function toRedeemError(message: string | undefined): RedeemError {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>({
-    status: 'loading',
-    guest: null,
+  // Start from the cached identity rather than a spinner. Offline, the guests
+  // query takes ten-odd seconds to fail, and a guest staring at "Loading…"
+  // inside a cave will assume the app is broken and give up. loadGuest still
+  // runs and corrects this to 'anonymous' if the session is genuinely gone.
+  const [state, setState] = useState<AuthState>(() => {
+    const cached = readCachedGuest()
+    return cached ? { status: 'redeemed', guest: cached } : { status: 'loading', guest: null }
   })
   // Collapses concurrent redeem attempts onto one request. Without this, a
   // double-fire (StrictMode, a double tap, a re-mount) can issue two
@@ -59,14 +83,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setState({ status: 'anonymous', guest: null })
       return
     }
+
     // RLS restricts this to the caller's own row, so no filter is needed.
-    const { data } = await supabase.from('guests').select('*').maybeSingle()
-    setState(data ? { status: 'redeemed', guest: data } : { status: 'anonymous', guest: null })
+    const { data, error } = await supabase.from('guests').select('*').maybeSingle()
+
+    if (data) {
+      cacheGuest(data)
+      setState({ status: 'redeemed', guest: data })
+      return
+    }
+
+    // A failed request is not the same as "no such guest". Treating it as one
+    // signed guests out the moment they lost signal — which is exactly when
+    // they are inside Zhijin Cave wanting to take photos. Fall back to the
+    // last known identity and let the upload queue hold their shots.
+    if (error) {
+      const cached = readCachedGuest()
+      if (cached) {
+        setState({ status: 'redeemed', guest: cached })
+        return
+      }
+    }
+
+    setState({ status: 'anonymous', guest: null })
   }, [])
 
   useEffect(() => {
     void loadGuest()
   }, [loadGuest])
+
+  // Start draining queued photos as soon as there is an identity to upload
+  // them under. Doing it here rather than on the camera screen means a guest
+  // who shot offline and later opens the app to any page still syncs.
+  const watching = useRef(false)
+  useEffect(() => {
+    if (state.status !== 'redeemed' || watching.current) return
+    watching.current = true
+    startQueueWatcher()
+  }, [state.status])
 
   const redeem = useCallback<AuthValue['redeem']>(async (code) => {
     const normalised = code.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
@@ -91,7 +145,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
         if (error) return { ok: false, reason: toRedeemError(error.message) }
 
-        setState({ status: 'redeemed', guest: data as unknown as Guest })
+        const guest = data as unknown as Guest
+        cacheGuest(guest)
+        setState({ status: 'redeemed', guest })
         return { ok: true }
       } catch (e) {
         return {
@@ -111,13 +167,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (patch) => {
       if (state.status !== 'redeemed') return
       // Optimistic: these are cosmetic, and the network here is unreliable.
-      setState({ status: 'redeemed', guest: { ...state.guest, ...patch } })
+      const next = { ...state.guest, ...patch }
+      cacheGuest(next)
+      setState({ status: 'redeemed', guest: next })
       await supabase.from('guests').update(patch).eq('id', state.guest.id)
     },
     [state],
   )
 
   const signOut = useCallback(async () => {
+    localStorage.removeItem(GUEST_CACHE_KEY)
     await supabase.auth.signOut()
     setState({ status: 'anonymous', guest: null })
   }, [])
