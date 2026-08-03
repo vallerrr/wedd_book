@@ -3,6 +3,7 @@ import { useAdmin } from './useAdmin'
 import { AdminLogin } from './AdminLogin'
 import { AdminGuests } from './AdminGuests'
 import { AdminQrSheet } from './AdminQrSheet'
+import { AdminSettings } from './AdminSettings'
 
 /**
  * Everything under /admin is one lazy chunk, so guests never download it.
@@ -34,6 +35,9 @@ export default function AdminApp() {
           <Link to="/admin/qr" className="text-ink-muted hover:text-ink">
             QR sheet
           </Link>
+          <Link to="/admin/settings" className="text-ink-muted hover:text-ink">
+            Settings
+          </Link>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-ink-faint">{email}</span>
@@ -47,6 +51,7 @@ export default function AdminApp() {
         <Route index element={<Navigate to="guests" replace />} />
         <Route path="guests" element={<AdminGuests />} />
         <Route path="qr" element={<AdminQrSheet />} />
+        <Route path="settings" element={<AdminSettings />} />
         <Route path="*" element={<Navigate to="guests" replace />} />
       </Routes>
     </div>

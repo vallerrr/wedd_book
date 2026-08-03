@@ -26,6 +26,27 @@ export default function Camera() {
   const [flash, setFlash] = useState(false)
   const [busy, setBusy] = useState(false)
 
+  // Whether guests get a viewfinder at all. Off is the true disposable feel;
+  // the couple can turn it on if aiming blind proves too frustrating. Either
+  // way the captured photos stay hidden until the reveal — that is enforced in
+  // the database, not here.
+  const [livePreview, setLivePreview] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    void supabase
+      .from('app_settings')
+      .select('camera_live_preview')
+      .eq('id', 1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data) setLivePreview(data.camera_live_preview)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const refreshCredits = useCallback(async () => {
     const { data } = await supabase.rpc('my_credits_remaining')
     if (typeof data === 'number') setCredits(data)
@@ -50,12 +71,12 @@ export default function Camera() {
     }
   }, [])
 
-  // iOS fixes a stream's orientation at the moment it starts and never
-  // re-orients it, so opening the camera in portrait and then turning the
-  // phone sideways produced a landscape scene rotated 90° inside a portrait
-  // frame. Re-acquiring the stream makes the OS hand back a correctly
-  // oriented buffer, which beats trying to rotate the canvas ourselves.
-  // There is no preview, so the restart is invisible.
+  // Re-acquire the stream when the phone is turned. On Android this is enough
+  // on its own — the OS hands back a buffer matching the new orientation. On
+  // iOS it is not: the orientation is fixed when the camera is first granted
+  // and a restart does not change it, which is why captureFrame also rotates a
+  // stale buffer back. Keeping the restart still helps, because it leaves the
+  // buffer and the device agreeing on Android so no correction is applied.
   useEffect(() => {
     if (state !== 'ready') return
 
@@ -184,7 +205,7 @@ export default function Camera() {
           playsInline
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-ink" aria-hidden />
+        {!livePreview && <div className="absolute inset-0 bg-ink" aria-hidden />}
 
         {/* Viewfinder frame, deliberately empty. */}
         <div className="absolute inset-5 rounded border border-paper-raised/25" />
@@ -196,11 +217,15 @@ export default function Camera() {
             {facing === 'user' ? t('camera.front') : t('camera.back')}
           </span>
         )}
-        <div className="absolute inset-0 flex items-center justify-center px-10 text-center">
-          <p className="text-sm leading-relaxed text-paper-raised/55">
-            {state === 'ready' ? t('camera.blindHint') : t('camera.permissionBody')}
-          </p>
-        </div>
+        {/* With a live preview there is a picture here; explaining that there
+            isn't one would be nonsense. */}
+        {!(livePreview && state === 'ready') && (
+          <div className="absolute inset-0 flex items-center justify-center px-10 text-center">
+            <p className="text-sm leading-relaxed text-paper-raised/55">
+              {state === 'ready' ? t('camera.blindHint') : t('camera.permissionBody')}
+            </p>
+          </div>
+        )}
         {flash && <div className="absolute inset-0 bg-paper-raised" aria-hidden />}
       </div>
 
@@ -226,9 +251,12 @@ export default function Camera() {
           </button>
         )}
 
-        {state === 'starting' && <p className="text-sm text-ink-faint">{t('app.loading')}</p>}
-
-        {state === 'ready' && (
+        {/* 'starting' covers the restart after a rotation as well as the very
+            first start. The shutter stays on screen and disabled rather than
+            disappearing, so rotating the phone doesn't make the button vanish
+            under your thumb — and a tap mid-restart cannot capture a frame
+            from the stream that is being torn down. */}
+        {(state === 'ready' || state === 'starting') && (
           // The shutter is the anchor: it stays dead centre, and the flip
           // button and hint hang off it. Laying them out in a row instead
           // pushed the shutter ~30px right of centre, which looks like a
@@ -238,7 +266,7 @@ export default function Camera() {
               <button
                 type="button"
                 onClick={() => void shoot()}
-                disabled={busy || out}
+                disabled={busy || out || state === 'starting'}
                 aria-label={t('camera.shoot')}
                 className="h-20 w-20 rounded-full border-4 border-ink bg-paper-raised transition-transform active:scale-95 disabled:opacity-30"
               />
@@ -248,6 +276,7 @@ export default function Camera() {
               <button
                 type="button"
                 onClick={flipCamera}
+                disabled={state === 'starting'}
                 aria-label={t('camera.flip')}
                 className="absolute top-1/2 right-full mr-5 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-rule text-ink-muted transition-colors active:bg-paper-sunk"
               >

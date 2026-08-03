@@ -57,12 +57,38 @@ export async function captureFrame(video: HTMLVideoElement): Promise<Blob> {
   const height = video.videoHeight
   if (!width || !height) throw new Error('camera_not_ready')
 
+  // iOS fixes a stream's orientation when it is first granted and never
+  // re-orients it — not even if the stream is restarted. Hold the phone
+  // sideways and the landscape scene arrives rotated 90° inside a portrait
+  // buffer, and a canvas capture carries no EXIF to fix it downstream.
+  //
+  // So compare the buffer's shape against how the device is actually held. If
+  // they disagree, the buffer is stale and we rotate it back. Android, where
+  // restarting the stream does re-orient it, sees them agree and is left
+  // alone — the same rule covers both without sniffing for a platform.
+  const angle = screen.orientation?.angle ?? 0
+  const deviceLandscape = angle === 90 || angle === 270
+  const bufferLandscape = width > height
+  const stale = deviceLandscape !== bufferLandscape
+
   const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
+  canvas.width = stale ? height : width
+  canvas.height = stale ? width : height
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('canvas_unavailable')
-  ctx.drawImage(video, 0, 0, width, height)
+
+  if (stale) {
+    // Turning the phone anticlockwise makes the world appear to turn
+    // clockwise inside the buffer, so undo exactly the reported angle.
+    // A landscape buffer on an upright device (angle 0) has no reported
+    // angle to undo, so fall back to a quarter turn.
+    const correction = deviceLandscape ? -angle : 90
+    ctx.translate(canvas.width / 2, canvas.height / 2)
+    ctx.rotate((correction * Math.PI) / 180)
+    ctx.drawImage(video, -width / 2, -height / 2, width, height)
+  } else {
+    ctx.drawImage(video, 0, 0, width, height)
+  }
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(
