@@ -8,22 +8,21 @@ opens when the couple decides.
 
 ## Where this is now
 
-**Phases 0 and 1 done.** Deployed, with guests able to redeem invite codes and the
-couple able to manage the list and print QR cards. Camera, bingo and gallery are still
-stubs.
+**All five committed features are built and deployed.** Identity, itinerary, blind
+camera, bingo and gallery. What remains is content, hardening and a rehearsal.
 
-Two things need a human:
+Outstanding:
 
-1. **Create a production admin account.** The admin panel is gated on a row in
-   `admin_profiles`, and there isn't one yet on the live project. In the Supabase
-   dashboard: Authentication → Users → Add user (email + password, confirm it), then in
-   the SQL Editor:
-   ```sql
-   insert into admin_profiles (user_id)
-   select id from auth.users where email = 'you@example.com';
-   ```
-2. **Load the guest list.** `node scripts/make-guests.mjs`, then paste
-   `private/insert-guests.sql` into the SQL Editor.
+1. **Pending migrations on production.** `supabase db push` applies them, but the
+   database ports are blocked on some networks — tether to a phone, or paste the files
+   in `supabase/migrations/` into the SQL Editor in filename order. Until then the
+   camera preview toggle and the gallery will error.
+2. **Workers Builds is not activating deployments.** Assets upload, but the deployment
+   never goes live, so `npm run deploy` is currently the only working path. The prime
+   suspect is the reused API token — it likely lacks Workers Scripts: Edit. This needs
+   fixing before the 26th; a manual deploy can't be the arrangement on the day.
+3. **Blind capture is verified on real hardware**, including orientation on both iOS and
+   Android, which took several rounds. Re-test after any change to `captureFrame`.
 
 ### Local development
 
