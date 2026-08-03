@@ -90,6 +90,9 @@ export const strings = {
     'gallery.showName': '显示我的名字',
     'gallery.mine': '我拍的',
     'gallery.all': '全部',
+    'gallery.lockedSoon': '新人还没有开启相册',
+    'gallery.waiting': '已经有 {n} 张照片在等着',
+    'gallery.empty': '这里还没有照片',
 
     'me.title': '我的',
     'me.name': '名字',
@@ -185,6 +188,9 @@ export const strings = {
     'gallery.showName': 'Show my name',
     'gallery.mine': 'Mine',
     'gallery.all': 'Everyone',
+    'gallery.lockedSoon': 'The couple haven’t opened the gallery yet',
+    'gallery.waiting': '{n} photos are waiting',
+    'gallery.empty': 'Nothing here yet',
 
     'me.title': 'You',
     'me.name': 'Name',

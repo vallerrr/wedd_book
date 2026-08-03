@@ -540,6 +540,26 @@ export type Database = {
         }
       }
       current_guest_id: { Args: never; Returns: string }
+      gallery_feed: {
+        Args: never
+        Returns: {
+          author: string
+          created_at: string
+          display_mode: string
+          id: string
+          mine: boolean
+          storage_path: string
+          thumb_path: string
+        }[]
+      }
+      gallery_state: {
+        Args: never
+        Returns: {
+          open: boolean
+          reveal_at: string
+          waiting_count: number
+        }[]
+      }
       gen_invite_code: { Args: never; Returns: string }
       is_admin: { Args: never; Returns: boolean }
       mark_photo_ready: { Args: { p_photo_id: string }; Returns: undefined }

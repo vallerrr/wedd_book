@@ -40,10 +40,10 @@ Guests start using the app on **26 September**, so the ship date is **~20 Septem
 |---|---|---|---|
 | 0 | Aug 1–7 | Scaffold, schema, RLS, RPCs, verification harness | ✅ done |
 | 1 | Aug 8–14 | Identity: redeem flow, admin auth, guest CRUD, printable QR sheet | ✅ done |
-| 2 | Aug 15–24 | Programme: public, offline, seeded with the real itinerary | next |
-| 3 | Aug 25–Sep 5 | Camera: blind capture, compression, IndexedDB queue, quota UI | |
-| 4 | Sep 6–11 | Bingo: per-guest private answers, replace flow, review-night view | |
-| 5 | Sep 12–16 | Gallery: reveal, signed thumbnails, anonymity toggle | |
+| 2 | Aug 15–24 | Programme: public, offline, seeded with the real itinerary | ✅ done |
+| 3 | Aug 25–Sep 5 | Camera: blind capture, compression, IndexedDB queue, quota UI | ✅ done |
+| 4 | Sep 6–11 | Bingo: per-guest private answers, replace flow, review-night view | ✅ done |
+| 5 | Sep 12–16 | Gallery: reveal, signed thumbnails, anonymity toggle | ✅ done |
 | 6 | Sep 12–16 | Custom domains live (~Sep 7); optional extras only if the above is signed off | |
 | 7 | Sep 17–20 | Freeze: real-device tests in-region, Supabase Pro, rehearsal | |
 

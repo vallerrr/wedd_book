@@ -301,6 +301,70 @@ async function main() {
     check(`the bucket is not public (HTTP ${res.status})`, !res.ok)
   }
 
+  // ---- gallery feed -------------------------------------------------------
+  // The feed resolves author names through a SECURITY DEFINER function, so it
+  // has its own chance to leak what the table policy hides.
+  console.log('\nGallery feed')
+  await setSettings({ gallery_visible: false, disposable_reveal_at: null })
+  // The feed only shows photos whose bytes actually landed, so promote the
+  // fixtures the way the upload queue would.
+  await admin.from('photos').update({ status: 'ready' }).eq('kind', 'disposable').eq('status', 'pending')
+  {
+    const { data } = await a.client.rpc('gallery_state')
+    const st = Array.isArray(data) ? data[0] : data
+    check('closed before reveal', st.open === false)
+
+    const { data: feed } = await a.client.rpc('gallery_feed')
+    check(`feed is empty before reveal (saw ${feed?.length ?? 0})`, (feed?.length ?? 0) === 0)
+  }
+  {
+    await setSettings({
+      gallery_visible: true,
+      disposable_reveal_at: new Date(Date.now() - 1000).toISOString(),
+    })
+    const { data: feed } = await a.client.rpc('gallery_feed')
+    check(`feed fills after reveal (saw ${feed?.length ?? 0})`, (feed?.length ?? 0) > 0)
+
+    const ownedByA = feed.filter((r) => r.mine).length
+    check(`"mine" marks the caller's own photos (${ownedByA} of ${feed.length})`, ownedByA > 0)
+
+    // Guest B sees the same photos but none of them as theirs.
+    const { data: feedB } = await b.client.rpc('gallery_feed')
+    check('the same photos are visible to everyone', feedB.length === feed.length)
+    check(
+      "...and A's photos are not marked as B's",
+      feedB.filter((r) => r.mine).length < feedB.length,
+    )
+  }
+  {
+    // Anonymity must be applied server-side, not left to the UI.
+    const { data: feed } = await a.client.rpc('gallery_feed')
+    const target = feed.find((r) => r.mine)
+    await a.client.from('photos').update({ display_mode: 'anonymous' }).eq('id', target.id)
+
+    const { data: after } = await b.client.rpc('gallery_feed')
+    const seen = after.find((r) => r.id === target.id)
+    check('an anonymous photo exposes no author name', seen.author === null)
+
+    await a.client.from('photos').update({ display_mode: 'named' }).eq('id', target.id)
+    const { data: renamed } = await b.client.rpc('gallery_feed')
+    check('naming it again restores the author', renamed.find((r) => r.id === target.id).author !== null)
+  }
+  {
+    // A guest may rename their own photo, never someone else's.
+    const { data: feed } = await b.client.rpc('gallery_feed')
+    const notMine = feed.find((r) => !r.mine)
+    if (notMine) {
+      await b.client.from('photos').update({ display_mode: 'anonymous' }).eq('id', notMine.id)
+      const { data: after } = await b.client.rpc('gallery_feed')
+      check(
+        "a guest cannot anonymise someone else's photo",
+        after.find((r) => r.id === notMine.id).display_mode !== 'anonymous',
+      )
+    }
+  }
+  await setSettings({ gallery_visible: false, disposable_reveal_at: null })
+
   // ---- public programme ---------------------------------------------------
   console.log('\nPublic programme')
   {
