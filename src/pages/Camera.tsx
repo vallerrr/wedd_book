@@ -135,17 +135,6 @@ export default function Camera() {
 
   return (
     <div className="px-6 py-8">
-      {/* Rendered, never shown. iOS Safari produces no frames from a video
-          that is display:none, so it is layered behind the viewfinder at
-          zero opacity instead. */}
-      <video
-        ref={videoRef}
-        autoPlay
-        muted
-        playsInline
-        className="pointer-events-none absolute h-px w-px opacity-0"
-      />
-
       <header className="flex items-baseline justify-between">
         <h1 className="text-2xl">{t('camera.title')}</h1>
         <p className="text-sm text-ink-muted">
@@ -154,6 +143,23 @@ export default function Camera() {
       </header>
 
       <div className="relative mt-6 aspect-[3/4] overflow-hidden rounded-card bg-ink">
+        {/*
+          The video is laid out at full size and genuinely playing — a 1px,
+          opacity-0 element gets throttled or never decoded on iOS, so
+          drawImage kept copying one stale frame and every photo came out
+          identical. It is hidden by the opaque panel stacked on top instead
+          of by being shrunk away, which keeps the capture live and the
+          viewfinder just as blank.
+        */}
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-ink" aria-hidden />
+
         {/* Viewfinder frame, deliberately empty. */}
         <div className="absolute inset-5 rounded border border-paper-raised/25" />
         <div className="absolute inset-0 flex items-center justify-center px-10 text-center">
