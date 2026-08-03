@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useI18n } from '@/i18n'
 import { supabase } from '@/lib/supabase'
 import { signedUrl, signedUrls } from '@/lib/photos'
@@ -49,6 +49,7 @@ export default function Gallery() {
   // says "not revealed yet", which would be a flat lie if the request simply
   // never arrived — and indistinguishable from the real thing for a guest.
   const [failed, setFailed] = useState(false)
+  const swipeFrom = useRef<number | null>(null)
 
   const load = useCallback(async () => {
     const [stateRes, feedRes] = await Promise.all([
@@ -104,12 +105,38 @@ export default function Gallery() {
     await load()
   }
 
+  /** Move through the photos currently on screen, wrapping at neither end. */
+  const step = useCallback(
+    async (delta: number) => {
+      if (!lightbox) return
+      const i = shown.findIndex((p) => p.id === lightbox.id)
+      const next = shown[i + delta]
+      if (!next) return
+      const url = await signedUrl(next.storage_path)
+      if (url) setLightbox({ id: next.id, url })
+    },
+    [lightbox, shown],
+  )
+
+  // Arrows too, for the couple flicking through on a laptop.
+  useEffect(() => {
+    if (!lightbox) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') void step(1)
+      else if (e.key === 'ArrowLeft') void step(-1)
+      else if (e.key === 'Escape') setLightbox(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [lightbox, step])
+
   async function openLightbox(row: FeedRow) {
     const url = await signedUrl(row.storage_path)
     if (url) setLightbox({ id: row.id, url })
   }
 
   const lightboxRow = lightbox ? photos.find((p) => p.id === lightbox.id) : undefined
+  const lightboxIndex = lightbox ? shown.findIndex((p) => p.id === lightbox.id) : -1
 
   if (loading) return <p className="px-6 py-8 text-sm text-ink-faint">{t('app.loading')}</p>
 
@@ -196,19 +223,47 @@ export default function Gallery() {
       )}
 
       {lightboxRow && lightbox && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-ink/95">
-          <button
-            type="button"
-            onClick={() => setLightbox(null)}
-            className="self-end p-5 text-2xl text-paper-raised/70"
-            aria-label={t('app.back')}
-          >
-            ×
-          </button>
-          <div className="flex flex-1 items-center justify-center px-4">
-            <img src={lightbox.url} alt="" className="max-h-full max-w-full object-contain" />
+        <div
+          className="fixed inset-0 z-50 flex flex-col bg-ink/95"
+          onTouchStart={(e) => {
+            swipeFrom.current = e.touches[0].clientX
+          }}
+          onTouchEnd={(e) => {
+            if (swipeFrom.current === null) return
+            const dx = e.changedTouches[0].clientX - swipeFrom.current
+            swipeFrom.current = null
+            // Generous threshold: this is a one-handed gesture, often while
+            // holding a drink.
+            if (Math.abs(dx) > 50) void step(dx < 0 ? 1 : -1)
+          }}
+        >
+          <div className="flex items-center justify-between px-5 pt-4">
+            <span className="text-sm text-paper-raised/50 tabular-nums">
+              {lightboxIndex + 1} / {shown.length}
+            </span>
+            <button
+              type="button"
+              onClick={() => setLightbox(null)}
+              className="p-1 text-2xl text-paper-raised/70"
+              aria-label={t('app.back')}
+            >
+              ×
+            </button>
           </div>
-          <div className="safe-bottom flex items-center justify-between px-6 pt-4">
+
+          {/* min-h-0 matters: a flex child defaults to min-height auto, so a
+              tall photo grew past the container and pushed the contributor's
+              name off the bottom of the screen. */}
+          <div className="flex min-h-0 flex-1 items-center justify-center px-4">
+            <img
+              src={lightbox.url}
+              alt=""
+              className="max-h-full max-w-full object-contain select-none"
+              draggable={false}
+            />
+          </div>
+
+          <div className="safe-bottom flex items-center justify-between gap-4 px-6 pt-4">
             <span className="text-sm text-paper-raised/70">
               {lightboxRow.author ?? t('gallery.anonymous')}
               {' · '}
