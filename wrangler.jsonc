@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wedd-book",
+  "compatibility_date": "2026-08-01",
+
+  // Static SPA. There is no Worker script — Cloudflare just serves ./dist and
+  // falls back to index.html so deep links like /program and /admin resolve
+  // client-side instead of 404ing.
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+
+  // No runtime vars here on purpose. VITE_SUPABASE_* are inlined by Vite at
+  // BUILD time, so they belong in the build environment (Cloudflare's
+  // "Variables and secrets", or .env.local locally) — never in the deployed
+  // Worker, which only serves files.
+}
