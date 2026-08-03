@@ -79,6 +79,9 @@ export const strings = {
     'bingo.replacePhoto': '换一张',
     'bingo.yourAnswer': '你的答案',
     'bingo.privateHint': '你的答案只有你能看到，揭晓夜会一起分享',
+    'bingo.number': '第 {n} 题',
+    'bingo.noAnswerYet': '还没有照片',
+    'bingo.fromLibrary': '从相册选择',
 
     'gallery.title': '相册',
     'gallery.lockedTitle': '还没有揭晓',
@@ -171,6 +174,9 @@ export const strings = {
     'bingo.replacePhoto': 'Replace',
     'bingo.yourAnswer': 'Your answer',
     'bingo.privateHint': "Only you can see your answers — we'll share them all on review night",
+    'bingo.number': 'Question {n}',
+    'bingo.noAnswerYet': 'No photo yet',
+    'bingo.fromLibrary': 'Choose from library',
 
     'gallery.title': 'Gallery',
     'gallery.lockedTitle': 'Not revealed yet',

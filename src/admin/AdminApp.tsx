@@ -4,6 +4,7 @@ import { AdminLogin } from './AdminLogin'
 import { AdminGuests } from './AdminGuests'
 import { AdminQrSheet } from './AdminQrSheet'
 import { AdminSettings } from './AdminSettings'
+import { AdminBingo } from './AdminBingo'
 
 /**
  * Everything under /admin is one lazy chunk, so guests never download it.
@@ -27,20 +28,25 @@ export default function AdminApp() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-8">
-      <nav className="no-print mb-8 flex items-center justify-between border-b border-rule pb-4 text-sm">
-        <div className="flex gap-5">
+      {/* Wraps rather than overflowing: review night may well be run from a
+          phone, and the couple shouldn't lose "Sign out" off the edge. */}
+      <nav className="no-print mb-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-rule pb-4 text-sm">
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
           <Link to="/admin/guests" className="text-ink-muted hover:text-ink">
             Guests
           </Link>
           <Link to="/admin/qr" className="text-ink-muted hover:text-ink">
             QR sheet
           </Link>
+          <Link to="/admin/bingo" className="text-ink-muted hover:text-ink">
+            Bingo
+          </Link>
           <Link to="/admin/settings" className="text-ink-muted hover:text-ink">
             Settings
           </Link>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-ink-faint">{email}</span>
+          <span className="hidden text-ink-faint sm:inline">{email}</span>
           <button onClick={signOut} className="text-ink-muted underline underline-offset-4">
             Sign out
           </button>
@@ -51,6 +57,7 @@ export default function AdminApp() {
         <Route index element={<Navigate to="guests" replace />} />
         <Route path="guests" element={<AdminGuests />} />
         <Route path="qr" element={<AdminQrSheet />} />
+        <Route path="bingo" element={<AdminBingo />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="*" element={<Navigate to="guests" replace />} />
       </Routes>
