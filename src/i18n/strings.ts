@@ -67,6 +67,8 @@ export const strings = {
     'camera.permissionBody': '接下来浏览器会询问相机权限，请选择「允许」。',
     'camera.permissionDenied': '没有相机权限，可以用系统相机拍，或从相册上传。',
     'camera.queued': '{n} 张待上传，有网时会自动同步',
+    'camera.tapHint': '按这里拍照',
+    'camera.flip': '前后摄像头切换',
 
     'bingo.title': '宾果破冰',
     'bingo.subtitle': '找到答案对应的人，拍张合照',
@@ -155,6 +157,8 @@ export const strings = {
     'camera.permissionDenied':
       'No in-app camera. You can use your phone camera or upload from your library.',
     'camera.queued': '{n} waiting to upload — they’ll sync when you have signal',
+    'camera.tapHint': 'Tap here to shoot',
+    'camera.flip': 'Switch between front and back camera',
 
     'bingo.title': 'Icebreaker bingo',
     'bingo.subtitle': 'Find the person each answer points to, then take a photo together',
