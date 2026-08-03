@@ -93,6 +93,7 @@ export const strings = {
     'gallery.lockedSoon': '新人还没有开启相册',
     'gallery.waiting': '已经有 {n} 张照片在等着',
     'gallery.empty': '这里还没有照片',
+    'gallery.loadFailed': '相册加载失败，请稍后重试',
 
     'me.title': '我的',
     'me.name': '名字',
@@ -191,6 +192,7 @@ export const strings = {
     'gallery.lockedSoon': 'The couple haven’t opened the gallery yet',
     'gallery.waiting': '{n} photos are waiting',
     'gallery.empty': 'Nothing here yet',
+    'gallery.loadFailed': 'Couldn’t load the gallery just now.',
 
     'me.title': 'You',
     'me.name': 'Name',

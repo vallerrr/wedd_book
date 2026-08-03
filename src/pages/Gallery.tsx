@@ -45,15 +45,29 @@ export default function Gallery() {
   // anonymous, because the list refreshed underneath and the copy did not.
   const [lightbox, setLightbox] = useState<{ id: string; url: string } | null>(null)
   const [loading, setLoading] = useState(true)
+  // A failed load must not be mistaken for a closed gallery: the locked screen
+  // says "not revealed yet", which would be a flat lie if the request simply
+  // never arrived — and indistinguishable from the real thing for a guest.
+  const [failed, setFailed] = useState(false)
 
   const load = useCallback(async () => {
-    const [{ data: s }, { data: feed }] = await Promise.all([
+    const [stateRes, feedRes] = await Promise.all([
       supabase.rpc('gallery_state'),
       supabase.rpc('gallery_feed'),
     ])
-    const st = Array.isArray(s) ? (s[0] as State) : (s as State | null)
+
+    if (stateRes.error) {
+      setFailed(true)
+      setLoading(false)
+      return
+    }
+
+    const st = Array.isArray(stateRes.data)
+      ? (stateRes.data[0] as State)
+      : (stateRes.data as State | null)
+    setFailed(false)
     setState(st ?? null)
-    const rows = (feed ?? []) as FeedRow[]
+    const rows = (feedRes.data ?? []) as FeedRow[]
     setPhotos(rows)
     setLoading(false)
     setThumbs(await signedUrls(rows.map((r) => r.thumb_path)))
@@ -98,6 +112,24 @@ export default function Gallery() {
   const lightboxRow = lightbox ? photos.find((p) => p.id === lightbox.id) : undefined
 
   if (loading) return <p className="px-6 py-8 text-sm text-ink-faint">{t('app.loading')}</p>
+
+  if (failed) {
+    return (
+      <div className="flex min-h-[70dvh] flex-col items-center justify-center gap-5 px-8 text-center">
+        <p className="text-ink-muted">{t('gallery.loadFailed')}</p>
+        <button
+          type="button"
+          onClick={() => {
+            setLoading(true)
+            void load()
+          }}
+          className="rounded-card border border-rule px-5 py-2.5 text-sm"
+        >
+          {t('app.retry')}
+        </button>
+      </div>
+    )
+  }
 
   if (!state?.open) {
     return (
