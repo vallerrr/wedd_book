@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { captureFrame, processPhoto } from '@/lib/imaging'
 import { enqueuePhoto, subscribeToQueue, clearRejection } from '@/lib/uploadQueue'
 import { buzz, playShutter } from '@/lib/shutter'
-import { supportsGetUserMedia } from '@/lib/ua'
+import { isIOS, supportsGetUserMedia } from '@/lib/ua'
 
 type CameraState = 'idle' | 'starting' | 'ready' | 'denied' | 'unsupported'
 
@@ -24,6 +24,9 @@ export default function Camera() {
   const [pending, setPending] = useState(0)
   const [rejection, setRejection] = useState<string | null>(null)
   const [flash, setFlash] = useState(false)
+  // Brief confirmation after a shot. With no preview and no image to look at,
+  // guests could not tell whether the tap had registered at all.
+  const [justSaved, setJustSaved] = useState(false)
   const [busy, setBusy] = useState(false)
 
   // Whether guests get a viewfinder at all. Off is the true disposable feel;
@@ -149,7 +152,9 @@ export default function Camera() {
     playShutter()
     buzz()
     setFlash(true)
-    setTimeout(() => setFlash(false), 140)
+    setTimeout(() => setFlash(false), 160)
+    setJustSaved(true)
+    setTimeout(() => setJustSaved(false), 1600)
 
     try {
       const blob = await captureFrame(videoRef.current)
@@ -173,6 +178,8 @@ export default function Camera() {
         playShutter()
         buzz()
       }
+      setJustSaved(true)
+      setTimeout(() => setJustSaved(false), 1600)
     } finally {
       setBusy(false)
     }
@@ -182,14 +189,21 @@ export default function Camera() {
 
   return (
     <div className="px-6 py-8">
-      <header className="flex items-baseline justify-between">
-        <h1 className="text-2xl">{t('camera.title')}</h1>
-        <p className="text-sm text-ink-muted">
-          {credits === null ? '' : t('camera.creditsLeft', { n: credits })}
-        </p>
-      </header>
+      {/* The count is shown large inside the frame, so repeating it up here
+          would just be noise. */}
+      <h1 className="text-2xl">{t('camera.title')}</h1>
 
-      <div className="relative mt-6 aspect-[3/4] overflow-hidden rounded-card bg-ink">
+      {/* iOS honours the physical rotation lock even in Safari, so a locked
+          phone keeps reporting portrait and landscape shots come out rotated.
+          Nothing in the app can detect or override it — the guest has to turn
+          it off — so say so before they try. */}
+      {state === 'ready' && isIOS() && (
+        <p className="mt-4 text-center text-xs leading-snug text-ink-faint">
+          {t('camera.rotationLock')}
+        </p>
+      )}
+
+      <div className="relative mt-3 aspect-[3/4] overflow-hidden rounded-card bg-ink">
         {/*
           The video is laid out at full size and genuinely playing — a 1px,
           opacity-0 element gets throttled or never decoded on iOS, so
@@ -219,15 +233,45 @@ export default function Camera() {
         )}
         {/* With a live preview there is a picture here; explaining that there
             isn't one would be nonsense. */}
-        {!(livePreview && state === 'ready') && (
-          <div className="absolute inset-0 flex items-center justify-center px-10 text-center">
+        {/* The count lives inside the frame, against the dark, because that is
+            where guests are looking — and it is the only running feedback that
+            a shot actually landed. */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center">
+          {state === 'ready' ? (
+            justSaved ? (
+              <p className="text-2xl text-paper-raised">{t('camera.saved')}</p>
+            ) : (
+              <>
+                {credits !== null && (
+                  <>
+                    <span className="text-6xl leading-none font-light text-paper-raised/90 tabular-nums">
+                      {credits}
+                    </span>
+                    <span className="mt-2 text-sm text-paper-raised/60">
+                      {t('camera.leftToday')}
+                    </span>
+                  </>
+                )}
+                {!livePreview && (
+                  <p className="mt-6 text-xs leading-relaxed text-paper-raised/40">
+                    {t('camera.blindHint')}
+                  </p>
+                )}
+              </>
+            )
+          ) : (
             <p className="text-sm leading-relaxed text-paper-raised/55">
-              {state === 'ready' ? t('camera.blindHint') : t('camera.permissionBody')}
+              {t('camera.permissionBody')}
             </p>
-          </div>
-        )}
-        {flash && <div className="absolute inset-0 bg-paper-raised" aria-hidden />}
+          )}
+        </div>
       </div>
+
+      {/* Full-screen, not just the frame: the blink is the loudest signal that
+          a photo was taken, and it should be impossible to miss. */}
+      {flash && (
+        <div className="pointer-events-none fixed inset-0 z-50 bg-paper-raised" aria-hidden />
+      )}
 
       {out && <p className="mt-4 text-center text-sm text-ink-muted">{t('camera.noCredits')}</p>}
 

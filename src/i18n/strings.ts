@@ -71,6 +71,8 @@ export const strings = {
     'camera.flip': '前后摄像头切换',
     'camera.front': '前置',
     'camera.back': '后置',
+    'camera.leftToday': '今天还可以拍',
+    'camera.rotationLock': 'iPhone 横着拍照前，请先关闭「屏幕方向锁定」（控制中心里的锁形图标）',
 
     'bingo.title': '宾果破冰',
     'bingo.subtitle': '找到答案对应的人，拍张合照',
@@ -169,7 +171,10 @@ export const strings = {
     'camera.tapHint': 'Tap here to shoot',
     'camera.flip': 'Switch between front and back camera',
     'camera.front': 'Front',
-    'camera.back': 'Back',
+    'camera.back': 'Rear',
+    'camera.leftToday': 'shots left today',
+    'camera.rotationLock':
+      'iPhone: turn off Rotation Lock in Control Centre before shooting sideways',
 
     'bingo.title': 'Icebreaker bingo',
     'bingo.subtitle': 'Find the person each answer points to, then take a photo together',
