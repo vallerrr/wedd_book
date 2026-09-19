@@ -9,7 +9,12 @@
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application"
-  }
+  },
+
+  // Guests reach the app here, not on workers.dev — that whole zone is
+  // blocked in mainland China, which we confirmed the hard way. Recorded as a
+  // route so the binding is reproducible rather than dashboard-only.
+  "routes": [{ "pattern": "yanzberg.cc", "custom_domain": true }]
 
   // No runtime vars here on purpose. VITE_SUPABASE_* are inlined by Vite at
   // BUILD time, so they belong in the build environment (Cloudflare's

@@ -34,8 +34,8 @@ insert into program_days (day_date, label_en, label_zh, intro_en, intro_zh, posi
   ('2026-09-26', 'Day 1 · Guiyang', '第一天 · 贵阳',
    'Monkeys, batik, and sour soup fish.', '爬山看猴子、蜡染、酸汤鱼。', 1),
   ('2026-09-27', 'Day 2 · Qianxi', '第二天 · 黔西',
-   'Decorating, photos together, and the night food street.',
-   '布置、一起看照片、逛小吃街。', 2),
+   'The biggest karst cave in China, then photos together and the food street.',
+   '中国洞王、一起看照片、逛小吃街。', 2),
   ('2026-09-28', 'Day 3 · The banquet', '第三天 · 婚宴',
    'Tea ceremony in the morning, banquet in the evening.',
    '上午敬茶，晚上婚宴。', 3)
@@ -158,25 +158,39 @@ We have the private room on the first floor up: 「888 苗族古歌」.',
    'https://uri.amap.com/search?keyword=亚朵轻居酒店 贵阳喷水池&city=贵阳', '{}'),
 
   -- ---- Day 2, Qianxi ------------------------------------------------------
-  ('2026-09-27', 1, 'meal', 'Lunch', '午饭',
+  ('2026-09-27', 1, 'activity', 'Morning', '上午',
+   'Zhijin Cave', '织金洞',
+   'The most spectacular karst cave in China — 6.6 km of it, so it is a long walk, but the scale and the lighting are worth it. Karst is *the* landscape of Guizhou, so don''t miss this one.
+
+Next to the cave there is also Zhijin Canyon, and for about ¥20 you can take a ten-minute boat ride.
+
+We may only take you as far as the entrance — we need to head back and prepare.',
+   '中国的“洞王”，喀斯特地貌形成的钟乳石洞。总共6.6公里，真的要走很久，但因为它巨大、灯光也做得好，非常值得逛。喀斯特是贵州的代表性地貌，推荐！
+
+旁边还有织金大峡谷，也需要走路，但很漂亮，还可以花20块钱坐10分钟的船。
+
+我和 Yquem 可能只送大家到门口，因为还要回去准备婚礼的事情。',
+   '织金洞', null, 'https://uri.amap.com/search?keyword=织金洞&city=毕节', '{}'),
+
+  ('2026-09-27', 2, 'meal', 'Lunch', '午饭',
    'Lunch at home, or local snacks', '在家吃，或者去吃小吃',
    'Nothing formal — either something at home or we go out for local snacks.',
    '不用太正式，在家随便吃点，或者出去吃小吃。',
    null, null, null, '{}'),
 
-  ('2026-09-27', 2, 'free', 'Afternoon', '下午',
+  ('2026-09-27', 3, 'free', 'Afternoon', '下午',
    'Free time — or come and decorate', '自由活动 · 也欢迎来帮忙布置',
    'Your afternoon is your own. If you would rather be useful, we will be decorating the house and the venue, and would love the company.',
    '下午自由活动。如果你想找点事做，我们会在家里和会场布置，非常欢迎来一起！',
    null, null, null, '{}'),
 
-  ('2026-09-27', 3, 'activity', 'Late afternoon', '傍晚',
+  ('2026-09-27', 4, 'activity', 'Late afternoon', '傍晚',
    'Photo viewing at our home', '在我们家一起看照片',
    'Everyone''s bingo answers open up, and we go through them together, question by question. This is the one you have been waiting for.',
    '所有人的宾果答案都会公开，我们一题一题一起看。就是这个时候啦！',
    null, null, null, '{}'),
 
-  ('2026-09-27', 4, 'meal', 'Late dinner', '夜宵',
+  ('2026-09-27', 5, 'meal', 'Late dinner', '夜宵',
    'Dafuba street food', '大府坝小吃街',
    'The local night food street — barbecue, sweet rice dumplings, rice noodles, skewers. Properly local and always crowded, and the food is wonderful.',
    '当地很有名的小吃一条街 —— 烧烤、汤圆、米粉、串串。很local也很挤，但真的很好吃！',
@@ -206,8 +220,8 @@ At our home, not the hotel.',
 
   ('2026-09-28', 4, 'meal', '18:00', '晚上6点',
    'The banquet', '晚宴',
-   'The formal dinner — third floor, Diamond Hall.',
-   '正式晚宴 —— 三楼钻石厅。',
+   'The formal dinner — second floor, Diamond Hall.',
+   '正式晚宴 —— 二楼钻石厅。',
    '黔西豪庭大酒店', '黔西市花都大道1号',
    'https://surl.amap.com/gpmb0cCCaFV', '{/brand/invitation.jpg}'),
 

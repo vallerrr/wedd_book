@@ -22,7 +22,7 @@ const IN = 'private/guest-list.txt'
 const OUT_SQL = 'private/insert-guests.sql'
 const OUT_CSV = 'private/invite-codes.csv'
 
-const BASE_URL = process.env.WEDD_BASE_URL ?? 'https://wedd-book.jiani-yan.workers.dev'
+const BASE_URL = process.env.WEDD_BASE_URL ?? 'https://yanzberg.cc'
 
 function newCode(taken) {
   for (let i = 0; i < 10000; i++) {
