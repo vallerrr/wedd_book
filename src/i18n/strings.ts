@@ -112,6 +112,7 @@ export const strings = {
     'me.anonymousDefault': '默认匿名发布',
     'me.table': '座位',
     'me.signOut': '退出登录',
+    'me.signOutConfirm': '退出后需要重新输入邀请码 {code} 才能进来。要退出吗？',
   },
 
   en: {
@@ -223,6 +224,7 @@ export const strings = {
     'me.anonymousDefault': 'Post anonymously by default',
     'me.table': 'Table',
     'me.signOut': 'Sign out',
+    'me.signOutConfirm': 'You’ll need your code {code} to get back in. Sign out?',
   },
 } as const
 

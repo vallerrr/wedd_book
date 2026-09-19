@@ -78,10 +78,23 @@ async function main() {
     check('re-redeem is idempotent and case-insensitive', !error && data.id === a.guest.id)
   }
   {
+    // Deliberately permissive: a code can be redeemed again, so signing out or
+    // clearing site data doesn't lock a guest out with no way back in. The
+    // guest row is the identity, so their photos and answers come with them.
     const c = createClient(API, ANON, { auth: { persistSession: false } })
     await c.auth.signInAnonymously()
-    const { error } = await c.rpc('redeem_invite_code', { p_code: 'aa1' })
-    check('a second person cannot claim a used code', error?.message.includes('code_already_used'))
+    const { data, error } = await c.rpc('redeem_invite_code', { p_code: 'aa1' })
+    check('a code can be redeemed again on a new session', !error && data?.invite_code === 'aa1')
+
+    // ...and the rebind moved it, rather than duplicating the guest.
+    const { count } = await admin
+      .from('guests')
+      .select('id', { count: 'exact', head: true })
+      .eq('invite_code', 'aa1')
+    check('rebinding does not duplicate the guest', count === 1)
+
+    // Put guest A back in charge for the rest of the suite.
+    await a.client.rpc('redeem_invite_code', { p_code: 'aa1' })
   }
   {
     const c = createClient(API, ANON, { auth: { persistSession: false } })

@@ -6,7 +6,7 @@ import { LanguageToggle } from '@/components/LanguageToggle'
 import { Prose } from '@/components/Prose'
 import { CopyButton } from '@/components/CopyButton'
 import { fetchProgramme, readCachedProgramme } from '@/lib/programme'
-import type { ContentBlock, ProgramItem, Programme } from '@/lib/programme'
+import type { ContentBlock, ProgramItem, Programme, Tip } from '@/lib/programme'
 
 /** Blocks shown above the day tabs, in this order. The rest go below. */
 const INTRO_KEYS = ['trip_intro', 'covered', 'not_covered']
@@ -75,6 +75,34 @@ function Item({ item }: { item: ProgramItem }) {
               {t('program.openMap')} →
             </a>
           )}
+        </div>
+      )}
+    </li>
+  )
+}
+
+function TipRow({ tip }: { tip: Tip }) {
+  const { t, pick } = useI18n()
+  return (
+    <li className="border-t border-rule py-4 first:border-t-0">
+      <p>{pick(tip.title_zh, tip.title_en)}</p>
+      <Prose text={pick(tip.note_zh, tip.note_en)} className="mt-1 text-sm text-ink-muted" />
+      {tip.address && (
+        <div className="mt-2 flex items-start justify-between gap-3 rounded-card bg-paper-sunk px-3 py-2 text-sm">
+          <div>
+            <p className="text-ink-muted">{tip.address}</p>
+            {tip.map_url && (
+              <a
+                href={tip.map_url}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-1 inline-block text-sage underline underline-offset-4"
+              >
+                {t('program.openMap')} →
+              </a>
+            )}
+          </div>
+          <CopyButton text={[tip.title_zh, tip.address].filter(Boolean).join(' ')} />
         </div>
       )}
     </li>
@@ -204,9 +232,23 @@ export function Program() {
 
           {showingTips ? (
             <div className="mt-2">
-              {tips.map((b) => (
-                <Block key={b.key} block={b} />
-              ))}
+              {(['guiyang', 'qianxi'] as const).map((city) => {
+                const note = blocks.find((b) => b.key === `${city}_extras`)
+                const places = (data.tips ?? []).filter((x) => x.city === city && x.visible)
+                if (!note && places.length === 0) return null
+                return (
+                  <section key={city} className="mt-8">
+                    {note && <Block block={note} />}
+                    {places.length > 0 && (
+                      <ul className="mt-4">
+                        {places.map((x) => (
+                          <TipRow key={x.id} tip={x} />
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+                )
+              })}
             </div>
           ) : null}
 

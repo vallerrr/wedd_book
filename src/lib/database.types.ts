@@ -461,6 +461,45 @@ export type Database = {
           },
         ]
       }
+      tips: {
+        Row: {
+          address: string | null
+          city: string
+          id: string
+          map_url: string | null
+          note_en: string | null
+          note_zh: string | null
+          position: number
+          title_en: string
+          title_zh: string
+          visible: boolean
+        }
+        Insert: {
+          address?: string | null
+          city: string
+          id?: string
+          map_url?: string | null
+          note_en?: string | null
+          note_zh?: string | null
+          position?: number
+          title_en: string
+          title_zh: string
+          visible?: boolean
+        }
+        Update: {
+          address?: string | null
+          city?: string
+          id?: string
+          map_url?: string | null
+          note_en?: string | null
+          note_zh?: string | null
+          position?: number
+          title_en?: string
+          title_zh?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

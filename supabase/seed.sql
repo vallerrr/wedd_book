@@ -255,3 +255,39 @@ At our home, not the hotel.',
   ) as v(day_date, position, category, time_label_en, time_label_zh,
          title_en, title_zh, body_en, body_zh, location_name, address, map_url, image_paths)
   join program_days d on d.day_date = v.day_date::date;
+
+-- ---------------------------------------------------------------------------
+-- Local food recommendations. Replaced wholesale, like the programme items.
+-- ---------------------------------------------------------------------------
+delete from tips;
+
+insert into tips (city, position, title_zh, title_en, note_zh, note_en, address, map_url) values
+  ('qianxi', 1, '炸串铺子', 'Fried skewer cart',
+   '水西园门口的一个推车摊。炸豆腐皮特别好吃，强烈推荐。开不开要看大叔心情，碰运气。',
+   'A cart outside the gate of Shuixi Park. The fried tofu skin is the thing to get. Whether it opens depends on the owner''s mood, so it is a bit of a gamble.',
+   '贵州省毕节市黔西市步行街29号', 'https://surl.amap.com/i80jFL8TaJ5'),
+
+  ('qianxi', 2, '胖子卤粉（文化路店）', 'Pangzi braised rice noodles',
+   '城里有很多家，地图上搜「胖子卤粉」就能找到。人均 ¥14。',
+   'There are several around town — search 胖子卤粉 on the map. About ¥14 a head.',
+   '黔西市御景天下', 'https://surl.amap.com/i57KnmCn1RE'),
+
+  ('qianxi', 3, '糯米饭', 'Glutinous rice',
+   '一定要吃现做的。这个地址门口有个报刊亭在卖。',
+   'Only worth eating freshly made. There is a newspaper kiosk by this address selling it.',
+   '贵州省毕节市黔西市迎宾路17号', 'https://surl.amap.com/i4e65zom4Ee'),
+
+  ('qianxi', 4, '水西丁家牛肉馆（文化路店）', 'Dingjia beef noodles',
+   '牛肉粉。人均 ¥17。',
+   'Beef rice noodles. About ¥17 a head.',
+   '水西丁家文化路1-15号门面', 'https://surl.amap.com/i5dfVdQ1s0bt'),
+
+  ('qianxi', 5, '干拌羊肉粉', 'Dry-mixed lamb noodles',
+   '在蜜雪冰城（文化路店）旁边 —— 下面这个地址是蜜雪冰城的，羊肉粉就在隔壁。',
+   'Next door to the Mixue tea shop on Wenhua Road — the address below is Mixue''s, the noodle place is beside it.',
+   '市莲城街道杜鹃花都新界一层1-1-7号', 'https://surl.amap.com/i6nWjGu1jdgg'),
+
+  ('qianxi', 6, '黔香江冷饮', 'Qianxiangjiang — bingfen',
+   '冰粉。人均 ¥15。',
+   'Bingfen, the cold jelly dessert. About ¥15 a head.',
+   '城关镇公园路28-30号门面', 'https://surl.amap.com/i2y3jBc17fAk');

@@ -58,7 +58,9 @@ export default function Me() {
 
       <button
         type="button"
-        onClick={() => void signOut()}
+        onClick={() => {
+          if (confirm(t('me.signOutConfirm', { code: guest.invite_code }))) void signOut()
+        }}
         className="mt-8 text-sm text-ink-faint underline underline-offset-4"
       >
         {t('me.signOut')}
