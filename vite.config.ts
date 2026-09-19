@@ -14,7 +14,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       // We register manually in src/lib/pwa.ts to control reload-on-update.
       injectRegister: null,
-      includeAssets: ['favicon.svg', 'brand/**/*', 'program/**/*'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'brand/**/*', 'program/**/*'],
       manifest: {
         name: '婚礼小册 Wedd Book',
         short_name: 'Wedd Book',
@@ -27,7 +27,14 @@ export default defineConfig({
         icons: [
           { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          // Separate art for maskable: Android crops to a circle, and the
+          // square icon would lose the outer petals.
+          {
+            src: '/icon-512-maskable.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
         ],
       },
       workbox: {
