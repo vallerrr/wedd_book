@@ -82,6 +82,19 @@ Day one we stay in Guiyang, day two we move to Qianxi — the town where the ban
 **咖啡。** 贵阳的特色咖啡非常出名，豆子是本地烘焙的，有些还在国际上获过奖。推荐 Captain George、Duide、JUJU。',
    4),
 
+  ('qianxi_extras', 'Qianxi', '黔西',
+   '**Zhijin Cave** 织金洞 — the karst cave from day two. The canyon next door is worth the extra walk, and the ten-minute boat is about ¥20.
+
+**Wujiang river** 乌江 — boat trips, if the weather is kind.
+
+**Dafuba** 大府坝 — the night food street. Barbecue, sweet rice dumplings, rice noodles, skewers. Crowded and very good.',
+   '**织金洞** —— 第二天去的那个溶洞。旁边的大峡谷也值得多走一段，坐船十分钟大概20块。
+
+**乌江** —— 天气好的话可以坐船游江。
+
+**大府坝** —— 夜市小吃街。烧烤、汤圆、米粉、串串，很挤但真的好吃。',
+   6),
+
   ('arrive_early', 'Arriving early or staying on?', '早到或者想多待几天？',
    'We will be doing some day trips around the province. You are very welcome to join — just let us know in advance so we can plan it together.',
    '我们会在省内做一些一日或两日游，非常欢迎你加入！提前告诉我们就好，可以一起商量。',
@@ -120,7 +133,8 @@ Lunch after: 肠旺面, the Guiyang noodle everyone should try once. Then coffee
    '爬山去看寺庙，路上会遇到野生猴子。
 
 下山后吃肠旺面，贵阳必吃的面。然后去喝咖啡，本地烘焙真的很不错。',
-   '黔灵山公园', null, 'https://uri.amap.com/search?keyword=黔灵山公园&city=贵阳', '{}'),
+   '黔灵山公园（南门）', '贵阳市枣山路187号（黔灵山公园地铁站 C 口步行 220 米）',
+   'https://surl.amap.com/4oQxuPI14c5q', '{}'),
 
   ('2026-09-26', 2, 'activity', '14:30 — last entry 15:00', '下午2点半（最晚3点入场）',
    'Batik workshop', '蜡染体验',
@@ -143,19 +157,19 @@ We have the private room on the first floor up: 「888 苗族古歌」.',
 
 已经订好二楼包房「888 苗族古歌」。',
    '老凯俚酸汤鱼（省府店）', null,
-   'https://uri.amap.com/search?keyword=老凯俚酸汤鱼 省府店&city=贵阳', '{}'),
+   'https://www.amap.com/search?query=%E8%80%81%E5%87%AF%E4%BF%9A%E9%85%B8%E6%B1%A4%E9%B1%BC%E7%9C%81%E5%BA%9C%E5%BA%97', '{}'),
 
   ('2026-09-26', 4, 'free', 'After dinner', '饭后',
    'Free evening', '自由活动',
    'You are free! If you like old architecture, Jiaxiu Pavilion is worth the walk — built in 1598 and lovely lit up over the river at night.',
    '自由活动时间！如果你对古建筑感兴趣，推荐去甲秀楼散散步看夜景，建于1598年，晚上灯光打在河上很好看。',
-   '甲秀楼', null, 'https://uri.amap.com/search?keyword=甲秀楼&city=贵阳', '{}'),
+   '甲秀楼', null, 'https://www.amap.com/search?query=甲秀楼', '{}'),
 
   ('2026-09-26', 5, 'hotel', 'Night', '住宿',
    'Atour Light Hotel, Guiyang', '亚朵轻居酒店（贵阳喷水池地铁站）',
    'Booked for the first night.', '第一晚的酒店已经订好了。',
    '贵阳云岩喷水池地铁站亚朵轻居酒店', '贵阳市云岩区黔灵西路11号',
-   'https://uri.amap.com/search?keyword=亚朵轻居酒店 贵阳喷水池&city=贵阳', '{}'),
+   'https://www.amap.com/search?query=%E4%BA%9A%E6%9C%B5%E8%BD%BB%E5%B1%85%E9%85%92%E5%BA%97%E8%B4%B5%E9%98%B3%E5%96%B7%E6%B0%B4%E6%B1%A0', '{}'),
 
   -- ---- Day 2, Qianxi ------------------------------------------------------
   ('2026-09-27', 1, 'activity', 'Morning', '上午',
@@ -170,7 +184,7 @@ We may only take you as far as the entrance — we need to head back and prepare
 旁边还有织金大峡谷，也需要走路，但很漂亮，还可以花20块钱坐10分钟的船。
 
 我和 Yquem 可能只送大家到门口，因为还要回去准备婚礼的事情。',
-   '织金洞', null, 'https://uri.amap.com/search?keyword=织金洞&city=毕节', '{}'),
+   '织金洞', null, 'https://www.amap.com/search?query=织金洞', '{}'),
 
   ('2026-09-27', 2, 'meal', 'Lunch', '午饭',
    'Lunch at home, or local snacks', '在家吃，或者去吃小吃',
@@ -194,7 +208,7 @@ We may only take you as far as the entrance — we need to head back and prepare
    'Dafuba street food', '大府坝小吃街',
    'The local night food street — barbecue, sweet rice dumplings, rice noodles, skewers. Properly local and always crowded, and the food is wonderful.',
    '当地很有名的小吃一条街 —— 烧烤、汤圆、米粉、串串。很local也很挤，但真的很好吃！',
-   '大府坝', null, 'https://uri.amap.com/search?keyword=大府坝&city=黔西', '{}'),
+   '大府坝', null, 'https://www.amap.com/search?query=大府坝', '{}'),
 
   -- ---- Day 3, the banquet -------------------------------------------------
   ('2026-09-28', 1, 'activity', '11:00', '上午11点',

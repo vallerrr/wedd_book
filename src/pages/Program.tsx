@@ -4,11 +4,15 @@ import { useI18n } from '@/i18n'
 import { useAuth } from '@/lib/auth'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { Prose } from '@/components/Prose'
+import { CopyButton } from '@/components/CopyButton'
 import { fetchProgramme, readCachedProgramme } from '@/lib/programme'
 import type { ContentBlock, ProgramItem, Programme } from '@/lib/programme'
 
 /** Blocks shown above the day tabs, in this order. The rest go below. */
 const INTRO_KEYS = ['trip_intro', 'covered', 'not_covered']
+/** Shown under the "Local tips" tab, in this order. */
+const TIP_KEYS = ['guiyang_extras', 'qianxi_extras']
+const TIPS_TAB = '__tips__'
 
 function dayLabel(iso: string, locale: string) {
   const d = new Date(`${iso}T00:00:00+08:00`)
@@ -27,29 +31,40 @@ function Item({ item }: { item: ProgramItem }) {
 
   return (
     <li className="border-t border-rule py-6 first:border-t-0 first:pt-0">
-      {time && <p className="text-xs tracking-wide text-ink-faint uppercase">{time}</p>}
+      {time && <p className="text-sm tracking-wide text-ink-muted">{time}</p>}
       <h3 className="mt-1 text-xl">{title}</h3>
 
-      {item.image_paths.length > 0 && (
-        <div className="mt-4 flex gap-3 overflow-x-auto">
-          {item.image_paths.map((src) => (
-            <img
-              key={src}
-              src={src}
-              alt=""
-              loading="lazy"
-              className="h-44 w-auto shrink-0 rounded-card object-cover"
-            />
-          ))}
-        </div>
+      {item.image_paths.length === 1 ? (
+        // A single image is usually the point of the entry — let it fill the
+        // column rather than sitting in a letterbox.
+        <img src={item.image_paths[0]} alt="" loading="lazy" className="mt-4 w-full rounded-card" />
+      ) : (
+        item.image_paths.length > 1 && (
+          <div className="mt-4 flex gap-3 overflow-x-auto">
+            {item.image_paths.map((src) => (
+              <img
+                key={src}
+                src={src}
+                alt=""
+                loading="lazy"
+                className="h-44 w-auto shrink-0 rounded-card object-cover"
+              />
+            ))}
+          </div>
+        )
       )}
 
       <Prose text={body} className="mt-3 text-ink-muted" />
 
       {(item.location_name || item.address) && (
         <div className="mt-4 rounded-card bg-paper-sunk px-4 py-3 text-sm">
-          {item.location_name && <p>{item.location_name}</p>}
-          {item.address && <p className="mt-0.5 text-ink-muted">{item.address}</p>}
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              {item.location_name && <p>{item.location_name}</p>}
+              {item.address && <p className="mt-0.5 text-ink-muted">{item.address}</p>}
+            </div>
+            <CopyButton text={[item.location_name, item.address].filter(Boolean).join(' ')} />
+          </div>
           {item.map_url && (
             <a
               href={item.map_url}
@@ -113,8 +128,12 @@ export function Program() {
   const intro = INTRO_KEYS.map((k) => blocks.find((b) => b.key === k)).filter(
     Boolean,
   ) as ContentBlock[]
-  const outro = blocks.filter((b) => !INTRO_KEYS.includes(b.key))
+  const tips = TIP_KEYS.map((k) => blocks.find((b) => b.key === k)).filter(
+    Boolean,
+  ) as ContentBlock[]
+  const outro = blocks.filter((b) => !INTRO_KEYS.includes(b.key) && !TIP_KEYS.includes(b.key))
   const day = days.find((d) => d.day_date === current)
+  const showingTips = current === TIPS_TAB
 
   return (
     <div className="mx-auto w-full max-w-lg px-6 py-8">
@@ -139,7 +158,7 @@ export function Program() {
 
           {/* Sticky so the day you're on stays reachable while scrolling. */}
           <nav className="sticky top-0 -mx-6 mt-10 bg-paper/95 px-6 py-3 backdrop-blur">
-            <ul className="flex gap-2">
+            <ul className="flex items-stretch gap-2">
               {days.map((d, i) => {
                 const on = d.day_date === current
                 return (
@@ -162,10 +181,36 @@ export function Program() {
                   </li>
                 )
               })}
+
+              {tips.length > 0 && (
+                <li className="flex-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveDay(TIPS_TAB)}
+                    aria-current={showingTips ? 'true' : undefined}
+                    className={`w-full rounded-card border px-2 py-2 text-center text-sm transition-colors ${
+                      showingTips
+                        ? 'border-ink bg-ink text-paper-raised'
+                        : 'border-rule text-ink-muted hover:bg-paper-sunk'
+                    }`}
+                  >
+                    <span className="block">{t('program.tips')}</span>
+                    <span className="block text-xs opacity-70">贵阳·黔西</span>
+                  </button>
+                </li>
+              )}
             </ul>
           </nav>
 
-          {day && (
+          {showingTips ? (
+            <div className="mt-2">
+              {tips.map((b) => (
+                <Block key={b.key} block={b} />
+              ))}
+            </div>
+          ) : null}
+
+          {!showingTips && day && (
             <div className="mt-6">
               <h2 className="text-xl">{pick(day.label_zh, day.label_en)}</h2>
               <Prose
@@ -175,7 +220,7 @@ export function Program() {
             </div>
           )}
 
-          {itemsForDay.length > 0 ? (
+          {showingTips ? null : itemsForDay.length > 0 ? (
             <ul className="mt-6">
               {itemsForDay.map((item) => (
                 <Item key={item.id} item={item} />

@@ -15,6 +15,8 @@ export const strings = {
     'app.save': '保存',
     'app.cancel': '取消',
     'app.offline': '当前离线，内容稍后会自动同步',
+    'app.copy': '复制',
+    'app.copied': '已复制',
 
     'lang.toggle': 'EN',
     'lang.label': '切换语言',
@@ -55,6 +57,7 @@ export const strings = {
     'program.openMap': '在地图中打开',
     'program.hotel': '酒店',
     'program.empty': '这一天的安排还在整理中～',
+    'program.tips': '推荐',
 
     'camera.title': '一次性相机',
     'camera.blindHint': '看不到取景画面 —— 就像真的一次性相机。拍完当天不会显示，之后统一揭晓。',
@@ -119,6 +122,8 @@ export const strings = {
     'app.save': 'Save',
     'app.cancel': 'Cancel',
     'app.offline': "You're offline — this will sync automatically later",
+    'app.copy': 'Copy',
+    'app.copied': 'Copied',
 
     'lang.toggle': '中文',
     'lang.label': 'Switch language',
@@ -160,6 +165,7 @@ export const strings = {
     'program.openMap': 'Open in maps',
     'program.hotel': 'Hotel',
     'program.empty': 'This day’s plan is still being written.',
+    'program.tips': 'Tips',
 
     'camera.title': 'Disposable camera',
     'camera.blindHint':
