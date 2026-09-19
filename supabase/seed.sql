@@ -32,11 +32,13 @@ on conflict (position) do update
 -- ---------------------------------------------------------------------------
 insert into program_days (day_date, label_en, label_zh, intro_en, intro_zh, position) values
   ('2026-09-26', 'Day 1 · Guiyang', '第一天 · 贵阳',
-   'Monkeys, batik, and a night market.', '爬山看猴子、蜡染、逛夜市。', 1),
+   'Monkeys, batik, and sour soup fish.', '爬山看猴子、蜡染、酸汤鱼。', 1),
   ('2026-09-27', 'Day 2 · Qianxi', '第二天 · 黔西',
-   'The biggest karst cave in China, then street food.', '中国洞王，晚上吃小吃。', 2),
-  ('2026-09-28', 'Day 3 · The banquet', '第三天 · 午晚宴',
-   'No ceremony — sleep in, then lunch downstairs.', '没有仪式，睡饱了下楼吃午饭。', 3)
+   'Decorating, photos together, and the night food street.',
+   '布置、一起看照片、逛小吃街。', 2),
+  ('2026-09-28', 'Day 3 · The banquet', '第三天 · 婚宴',
+   'Tea ceremony in the morning, banquet in the evening.',
+   '上午敬茶，晚上婚宴。', 3)
 on conflict (day_date) do update
   set label_en = excluded.label_en,
       label_zh = excluded.label_zh,
@@ -103,104 +105,125 @@ delete from program_items;
 
 insert into program_items
   (day_id, position, category, time_label_en, time_label_zh, title_en, title_zh,
-   body_en, body_zh, location_name, address, map_url)
+   body_en, body_zh, location_name, address, map_url, image_paths)
 select d.id, v.position, v.category, v.time_label_en, v.time_label_zh,
        v.title_en, v.title_zh, v.body_en, v.body_zh,
-       v.location_name, v.address, v.map_url
+       v.location_name, v.address, v.map_url, v.image_paths::text[]
   from (values
 
   -- ---- Day 1, Guiyang -----------------------------------------------------
-  ('2026-09-26', 1, 'activity', 'Around 10am', '早上十点左右',
-   'Qianling Park', '爬黔灵山看猴子',
-   'A walk up Qianling mountain to look for the wild monkeys — the ones that drink iced tea. We are not kidding.',
-   '爬黔灵山，去看野生猴子喝冰红茶。真的不是开玩笑哈哈。',
-   '黔灵山公园', null, 'https://uri.amap.com/search?keyword=黔灵山公园&city=贵阳'),
+  ('2026-09-26', 1, 'activity', '10:00', '上午十点',
+   'Qianling Park', '黔灵山公园',
+   'A walk up to the temple, and the wild monkeys along the way.
 
-  ('2026-09-26', 2, 'activity', 'Afternoon', '下午',
+Lunch after: 肠旺面, the Guiyang noodle everyone should try once. Then coffee — the local roasters are genuinely good.',
+   '爬山去看寺庙，路上会遇到野生猴子。
+
+下山后吃肠旺面，贵阳必吃的面。然后去喝咖啡，本地烘焙真的很不错。',
+   '黔灵山公园', null, 'https://uri.amap.com/search?keyword=黔灵山公园&city=贵阳', '{}'),
+
+  ('2026-09-26', 2, 'activity', '14:30 — last entry 15:00', '下午2点半（最晚3点入场）',
    'Batik workshop', '蜡染体验',
-   'Batik is a traditional Miao craft — wax-resist dyeing on cloth. No pressure to make great art, just enjoy the process.',
-   '蜡染是苗族的传统手工艺，用蜡防染在布上画花。不要有压力哈哈，重在体验！',
-   null, null, null),
+   'Batik is a traditional Miao craft — wax-resist dyeing on cloth. No pressure to make great art, just enjoy the process.
 
-  ('2026-09-26', 3, 'meal', 'Evening', '晚上',
-   'Qingyun market', '青云集市',
-   'Food stalls and little stands selling local handmade things. This is where we will have dinner.',
-   '有吃的喝的，也有当地文创的小摊。我们会在这里吃晚饭。',
-   '青云集市', null, 'https://uri.amap.com/search?keyword=青云集市&city=贵阳'),
+Please arrive by 14:30 if you can. 15:00 is the last entry.',
+   '蜡染是苗族的传统手工艺，用蜡防染在布上画花。不要有压力哈哈，重在体验！
 
-  ('2026-09-26', 4, 'free', 'Afterwards', '那之后',
+尽量2点半到，3点是最后入场时间。',
+   '六分之一蓝空间 · 蜡染扎染手工DIY（大觉精舍店）',
+   '贵州省贵阳市云岩区电台街88号（大觉精舍旁）',
+   'https://surl.amap.com/g75SaLcbdGn', '{}'),
+
+  ('2026-09-26', 3, 'meal', '18:00', '晚上6点',
+   'Dinner — Laokaili sour soup fish', '晚餐 · 老凯俚酸汤鱼（省府店）',
+   'A Guizhou institution, and the sour soup fish is on the city''s intangible cultural heritage list.
+
+We have the private room on the first floor up: 「888 苗族古歌」.',
+   '贵州老字号，酸汤鱼是贵阳市非物质文化遗产。
+
+已经订好二楼包房「888 苗族古歌」。',
+   '老凯俚酸汤鱼（省府店）', null,
+   'https://uri.amap.com/search?keyword=老凯俚酸汤鱼 省府店&city=贵阳', '{}'),
+
+  ('2026-09-26', 4, 'free', 'After dinner', '饭后',
    'Free evening', '自由活动',
-   'You are free! If you like old architecture, we recommend a walk to Jiaxiu Pavilion — it was built in 1598 and looks lovely lit up over the river at night.
-
-Then rest well. Day two is more physically demanding.',
-   '自由活动时间！如果你对古建筑感兴趣，推荐去甲秀楼散散步看夜景，建于1598年，晚上灯光打在河上很好看。
-
-然后好好休息，第二天会比较消耗体力。',
-   '甲秀楼', null, 'https://uri.amap.com/search?keyword=甲秀楼&city=贵阳'),
+   'You are free! If you like old architecture, Jiaxiu Pavilion is worth the walk — built in 1598 and lovely lit up over the river at night.',
+   '自由活动时间！如果你对古建筑感兴趣，推荐去甲秀楼散散步看夜景，建于1598年，晚上灯光打在河上很好看。',
+   '甲秀楼', null, 'https://uri.amap.com/search?keyword=甲秀楼&city=贵阳', '{}'),
 
   ('2026-09-26', 5, 'hotel', 'Night', '住宿',
    'Atour Light Hotel, Guiyang', '亚朵轻居酒店（贵阳喷水池地铁站）',
    'Booked for the first night.', '第一晚的酒店已经订好了。',
    '贵阳云岩喷水池地铁站亚朵轻居酒店', '贵阳市云岩区黔灵西路11号',
-   'https://uri.amap.com/search?keyword=亚朵轻居酒店 贵阳喷水池&city=贵阳'),
+   'https://uri.amap.com/search?keyword=亚朵轻居酒店 贵阳喷水池&city=贵阳', '{}'),
 
   -- ---- Day 2, Qianxi ------------------------------------------------------
-  ('2026-09-27', 1, 'activity', 'Morning to midday', '上午到中午',
-   'Zhijin Cave', '织金洞',
-   'The most spectacular karst cave in China — 6.6 km of it, so it is a long walk, but the scale and the lighting are worth it. Karst is *the* landscape of Guizhou, so don''t miss this one.
-
-Next to the cave there is also Zhijin Canyon, and for about ¥20 you can take a ten-minute boat ride.
-
-We may only take you as far as the entrance — we need to head back and prepare for the banquet.',
-   '中国的“洞王”，喀斯特地貌形成的钟乳石洞。总共6.6公里，真的要走很久，但因为它巨大、灯光也做得好，非常值得逛。喀斯特是贵州的代表性地貌，推荐！
-
-旁边还有织金大峡谷，也需要走路，但很漂亮，还可以花20块钱坐10分钟的船。
-
-我和 Yquem 可能只送大家到门口，因为还要回去准备第二天婚礼的事情。',
-   '织金洞', null, 'https://uri.amap.com/search?keyword=织金洞&city=毕节'),
+  ('2026-09-27', 1, 'meal', 'Lunch', '午饭',
+   'Lunch at home, or local snacks', '在家吃，或者去吃小吃',
+   'Nothing formal — either something at home or we go out for local snacks.',
+   '不用太正式，在家随便吃点，或者出去吃小吃。',
+   null, null, null, '{}'),
 
   ('2026-09-27', 2, 'free', 'Afternoon', '下午',
-   'Boat trip, or rest', '坐船游乌江，或者休息',
-   'If everyone still has energy we can take a boat along the Wujiang river. Otherwise we rest and explore Qianxi a bit — we will see how we feel.',
-   '如果大家还有精力，可以去坐船游乌江。或者就在黔西休息、随便逛逛，到时候看状态决定。',
-   null, null, null),
+   'Free time — or come and decorate', '自由活动 · 也欢迎来帮忙布置',
+   'Your afternoon is your own. If you would rather be useful, we will be decorating the house and the venue, and would love the company.',
+   '下午自由活动。如果你想找点事做，我们会在家里和会场布置，非常欢迎来一起！',
+   null, null, null, '{}'),
 
-  ('2026-09-27', 3, 'meal', 'Evening', '晚上',
+  ('2026-09-27', 3, 'activity', 'Late afternoon', '傍晚',
+   'Photo viewing at our home', '在我们家一起看照片',
+   'Everyone''s bingo answers open up, and we go through them together, question by question. This is the one you have been waiting for.',
+   '所有人的宾果答案都会公开，我们一题一题一起看。就是这个时候啦！',
+   null, null, null, '{}'),
+
+  ('2026-09-27', 4, 'meal', 'Late dinner', '夜宵',
    'Dafuba street food', '大府坝小吃街',
-   'Another food hunt. Dafuba is the local night street food area — barbecue, sweet rice dumplings, rice noodles, skewers. It is properly local and gets crowded, but the food is wonderful.',
-   '晚上带大家去大府坝，当地很有名的小吃一条街 —— 烧烤、汤圆、米粉、串串。很local也很挤，但真的很好吃！',
-   '大府坝', null, 'https://uri.amap.com/search?keyword=大府坝&city=黔西'),
-
-  ('2026-09-27', 4, 'hotel', 'Night', '住宿',
-   'The banquet hotel, Qianxi', '黔西的宴会酒店',
-   'We move hotels tonight — you will stay in the same hotel where the banquet happens tomorrow.',
-   '今晚换酒店，你们会入住明天午宴和晚宴的同一家酒店。',
-   null, null, null),
+   'The local night food street — barbecue, sweet rice dumplings, rice noodles, skewers. Properly local and always crowded, and the food is wonderful.',
+   '当地很有名的小吃一条街 —— 烧烤、汤圆、米粉、串串。很local也很挤，但真的很好吃！',
+   '大府坝', null, 'https://uri.amap.com/search?keyword=大府坝&city=黔西', '{}'),
 
   -- ---- Day 3, the banquet -------------------------------------------------
-  ('2026-09-28', 1, 'free', 'Morning', '早上',
-   'Sleep in', '睡到自然醒',
-   'There is no ceremony, so sleep as long as you like. If you are up early and want to try a local breakfast, come with us or ask and we will point you somewhere good.',
-   '因为没有仪式，可以睡饱。如果你醒得早想吃早餐，可以一起去，或者问我们要推荐的小馆子。',
-   null, null, null),
+  ('2026-09-28', 1, 'activity', '11:00', '上午11点',
+   'Tea ceremony at our home', '敬茶仪式 · 在我们家',
+   'The one ceremony of the whole weekend. Yquem serves tea to Jiani''s parents — the moment he changes how he addresses them.
 
-  ('2026-09-28', 2, 'meal', 'Around 12:00', '中午12点左右',
-   'Lunch banquet', '午宴',
+At our home, not the hotel.',
+   '整个周末唯一的仪式。Yquem 给佳妮的爸妈敬茶 —— 也是他改口的时刻。
+
+在我们家，不在酒店。',
+   null, null, null, '{}'),
+
+  ('2026-09-28', 2, 'meal', 'Lunch', '午饭',
+   'Lunch in the hotel food hall', '酒店宴会厅午餐',
    'In the same hotel you are staying in — just come downstairs.',
-   '就在你住的酒店里，下楼就到。',
-   null, null, null),
+   '就在你住的酒店，下楼就到。',
+   null, null, null, '{}'),
 
   ('2026-09-28', 3, 'free', 'Afternoon', '下午',
    'Free time', '自由活动',
-   'Do whatever you like between the two meals.',
-   '两顿饭之间自由安排。',
-   null, null, null),
+   'Rest, wander, or find us.', '休息、逛逛，或者来找我们。',
+   null, null, null, '{}'),
 
-  ('2026-09-28', 4, 'meal', 'Evening', '晚上',
-   'Dinner', '晚宴',
-   'Dinner is provided too — same place.', '晚饭也管，还是同一个地方。',
-   null, null, null)
+  ('2026-09-28', 4, 'meal', '18:00', '晚上6点',
+   'The banquet', '晚宴',
+   'The formal dinner — third floor, Diamond Hall.',
+   '正式晚宴 —— 三楼钻石厅。',
+   '黔西豪庭大酒店', '黔西市花都大道1号',
+   'https://surl.amap.com/gpmb0cCCaFV', '{/brand/invitation.jpg}'),
+
+  ('2026-09-28', 5, 'free', 'Later', '晚一点',
+   'Maybe the food street again', '也许再去一次小吃街',
+   'If anyone still has the energy, we may well go back out for late night food.',
+   '如果大家还有精力，我们可能会再去吃一次夜宵！',
+   null, null, null, '{}'),
+
+  ('2026-09-28', 6, 'hotel', 'Where you are staying', '住宿',
+   'Haoting Hotel, Qianxi', '黔西豪庭大酒店',
+   'Both the lunch and the banquet are in this hotel.',
+   '午餐和晚宴都在这家酒店。',
+   '黔西豪庭大酒店', '黔西市花都大道1号',
+   'https://surl.amap.com/gpmb0cCCaFV', '{}')
 
   ) as v(day_date, position, category, time_label_en, time_label_zh,
-         title_en, title_zh, body_en, body_zh, location_name, address, map_url)
+         title_en, title_zh, body_en, body_zh, location_name, address, map_url, image_paths)
   join program_days d on d.day_date = v.day_date::date;

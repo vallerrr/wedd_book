@@ -50,8 +50,26 @@ if (duplicates.length) {
   process.exit(1)
 }
 
-const taken = new Set()
-const guests = names.map((name) => ({ name, code: newCode(taken) }))
+// Codes already issued must never change: they are printed on QR cards and
+// bound to redeemed sessions in the database. Re-running this script should
+// only ever mint codes for names it has not seen before.
+const existing = new Map()
+try {
+  const csv = readFileSync(OUT_CSV, 'utf8').split('\n').slice(1)
+  for (const line of csv) {
+    const m = line.match(/^"(.*?)",([^,]+)/)
+    if (m) existing.set(m[1].replaceAll('""', '"'), m[2])
+  }
+} catch {
+  // First run — nothing issued yet.
+}
+
+const taken = new Set(existing.values())
+const guests = names.map((name) => ({
+  name,
+  code: existing.get(name) ?? newCode(taken),
+  isNew: !existing.has(name),
+}))
 
 const sqlEscape = (s) => s.replaceAll("'", "''")
 
@@ -83,6 +101,8 @@ writeFileSync(OUT_CSV, csv + '\n')
 const width = Math.max(...guests.map((g) => g.name.length))
 console.log(`\n${guests.length} guests\n`)
 for (const g of guests) {
-  console.log(`  ${g.name.padEnd(width)}  ${g.code}   ${BASE_URL}/?c=${g.code}`)
+  console.log(
+    `  ${g.name.padEnd(width)}  ${g.code}   ${BASE_URL}/?c=${g.code}${g.isNew ? '   <- new' : ''}`,
+  )
 }
 console.log(`\nWrote ${OUT_SQL} and ${OUT_CSV} (both gitignored)\n`)

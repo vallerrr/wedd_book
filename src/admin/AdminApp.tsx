@@ -5,6 +5,7 @@ import { AdminGuests } from './AdminGuests'
 import { AdminQrSheet } from './AdminQrSheet'
 import { AdminSettings } from './AdminSettings'
 import { AdminBingo } from './AdminBingo'
+import { AdminPrints } from './AdminPrints'
 
 /**
  * Everything under /admin is one lazy chunk, so guests never download it.
@@ -41,6 +42,9 @@ export default function AdminApp() {
           <Link to="/admin/bingo" className="text-ink-muted hover:text-ink">
             Bingo
           </Link>
+          <Link to="/admin/prints" className="text-ink-muted hover:text-ink">
+            Prints
+          </Link>
           <Link to="/admin/settings" className="text-ink-muted hover:text-ink">
             Settings
           </Link>
@@ -58,6 +62,7 @@ export default function AdminApp() {
         <Route path="guests" element={<AdminGuests />} />
         <Route path="qr" element={<AdminQrSheet />} />
         <Route path="bingo" element={<AdminBingo />} />
+        <Route path="prints" element={<AdminPrints />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="*" element={<Navigate to="guests" replace />} />
       </Routes>

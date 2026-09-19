@@ -60,6 +60,7 @@ export type Database = {
           event_start_date: string
           gallery_visible: boolean
           id: number
+          print_picks_per_guest: number
           slideshow_enabled: boolean
           updated_at: string
           upload_cost: number
@@ -75,6 +76,7 @@ export type Database = {
           event_start_date?: string
           gallery_visible?: boolean
           id?: number
+          print_picks_per_guest?: number
           slideshow_enabled?: boolean
           updated_at?: string
           upload_cost?: number
@@ -90,6 +92,7 @@ export type Database = {
           event_start_date?: string
           gallery_visible?: boolean
           id?: number
+          print_picks_per_guest?: number
           slideshow_enabled?: boolean
           updated_at?: string
           upload_cost?: number
@@ -330,6 +333,39 @@ export type Database = {
           },
         ]
       }
+      print_picks: {
+        Row: {
+          created_at: string
+          guest_id: string
+          photo_id: string
+        }
+        Insert: {
+          created_at?: string
+          guest_id: string
+          photo_id: string
+        }
+        Update: {
+          created_at?: string
+          guest_id?: string
+          photo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_picks_guest_id_fkey"
+            columns: ["guest_id"]
+            isOneToOne: false
+            referencedRelation: "guests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "print_picks_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "photos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       program_days: {
         Row: {
           day_date: string
@@ -430,6 +466,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_print_pick: { Args: { p_photo_id: string }; Returns: number }
       admin_create_guest: {
         Args: { p_display_name: string }
         Returns: {
@@ -564,7 +601,24 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       mark_photo_ready: { Args: { p_photo_id: string }; Returns: undefined }
       my_credits_remaining: { Args: never; Returns: number }
+      my_print_picks: {
+        Args: never
+        Returns: {
+          photo_id: string
+          remaining: number
+        }[]
+      }
       owns_photo_path: { Args: { p_path: string }; Returns: boolean }
+      print_queue: {
+        Args: never
+        Returns: {
+          chosen_by: string[]
+          photo_id: string
+          pick_count: number
+          storage_path: string
+          thumb_path: string
+        }[]
+      }
       redeem_invite_code: {
         Args: { p_code: string }
         Returns: {

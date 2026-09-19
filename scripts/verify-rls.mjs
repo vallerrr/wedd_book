@@ -365,6 +365,57 @@ async function main() {
   }
   await setSettings({ gallery_visible: false, disposable_reveal_at: null })
 
+  // ---- print picks --------------------------------------------------------
+  console.log('\nPrint picks')
+  await setSettings({
+    gallery_visible: true,
+    disposable_reveal_at: new Date(Date.now() - 1000).toISOString(),
+    print_picks_per_guest: 3,
+  })
+  {
+    const { data: feed } = await a.client.rpc('gallery_feed')
+    const ids = feed.slice(0, 5).map((r) => r.id)
+
+    const results = []
+    for (const id of ids) results.push(await a.client.rpc('add_print_pick', { p_photo_id: id }))
+    const ok = results.filter((r) => !r.error).length
+    check(`only 3 of 5 picks are accepted (got ${ok})`, ok === 3)
+    check(
+      'the rest are refused as pick_limit_reached',
+      results.filter((r) => r.error?.message.includes('pick_limit_reached')).length === 2,
+    )
+
+    const { data: mine } = await a.client.rpc('my_print_picks')
+    check(`the guest sees their own 3 picks (saw ${mine?.length ?? 0})`, mine?.length === 3)
+
+    // Unpicking frees a slot.
+    await a.client.from('print_picks').delete().eq('photo_id', ids[0])
+    const { error: again } = await a.client.rpc('add_print_pick', { p_photo_id: ids[3] })
+    check('unpicking frees a slot', !again, again?.message)
+  }
+  {
+    // One guest must not see or remove another's picks.
+    const { data: bPicks } = await b.client.rpc('my_print_picks')
+    check(`picks are private to each guest (B saw ${bPicks?.length ?? 0})`, (bPicks?.length ?? 0) === 0)
+
+    const { data: aPicks } = await a.client.rpc('my_print_picks')
+    await b.client.from('print_picks').delete().eq('photo_id', aPicks[0].photo_id)
+    const { data: stillThere } = await a.client.rpc('my_print_picks')
+    check("a guest cannot delete someone else's pick", stillThere.length === aPicks.length)
+  }
+  {
+    // The print queue is admin-only.
+    const { data: q } = await a.client.rpc('print_queue')
+    check(`a guest gets nothing from print_queue (saw ${q?.length ?? 0})`, (q?.length ?? 0) === 0)
+  }
+  await setSettings({ gallery_visible: false, disposable_reveal_at: null })
+  {
+    const { error } = await a.client.rpc('add_print_pick', {
+      p_photo_id: '00000000-0000-0000-0000-000000000000',
+    })
+    check('cannot pick a photo you cannot see', error?.message.includes('photo_not_available'))
+  }
+
   // ---- public programme ---------------------------------------------------
   console.log('\nPublic programme')
   {

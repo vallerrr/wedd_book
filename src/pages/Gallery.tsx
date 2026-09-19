@@ -50,6 +50,10 @@ export default function Gallery() {
   // never arrived — and indistinguishable from the real thing for a guest.
   const [failed, setFailed] = useState(false)
   const swipeFrom = useRef<number | null>(null)
+  // Photos this guest has chosen to have printed, and how many they have left.
+  const [picks, setPicks] = useState<Set<string>>(new Set())
+  const [picksLeft, setPicksLeft] = useState<number | null>(null)
+  const [pickError, setPickError] = useState<'limit' | 'other' | null>(null)
 
   const load = useCallback(async () => {
     const [stateRes, feedRes] = await Promise.all([
@@ -72,6 +76,11 @@ export default function Gallery() {
     setPhotos(rows)
     setLoading(false)
     setThumbs(await signedUrls(rows.map((r) => r.thumb_path)))
+
+    const { data: picked } = await supabase.rpc('my_print_picks')
+    const list = (picked ?? []) as { photo_id: string; remaining: number }[]
+    setPicks(new Set(list.map((r) => r.photo_id)))
+    setPicksLeft(list[0]?.remaining ?? null)
   }, [])
 
   useEffect(() => {
@@ -129,6 +138,30 @@ export default function Gallery() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [lightbox, step])
+
+  async function togglePick(row: FeedRow) {
+    if (picks.has(row.id)) {
+      setPicks((p) => new Set([...p].filter((id) => id !== row.id)))
+      await supabase.from('print_picks').delete().eq('photo_id', row.id)
+    } else {
+      const { error } = await supabase.rpc('add_print_pick', { p_photo_id: row.id })
+      if (error) {
+        // Cap reached, or the photo went away. Either way the server decides.
+        setPickError(error.message.includes('pick_limit_reached') ? 'limit' : 'other')
+        setTimeout(() => setPickError(null), 2500)
+        return
+      }
+      setPicks((p) => new Set(p).add(row.id))
+    }
+    await refreshPicks()
+  }
+
+  const refreshPicks = useCallback(async () => {
+    const { data } = await supabase.rpc('my_print_picks')
+    const list = (data ?? []) as { photo_id: string; remaining: number }[]
+    setPicks(new Set(list.map((r) => r.photo_id)))
+    setPicksLeft(list[0]?.remaining ?? null)
+  }, [])
 
   async function openLightbox(row: FeedRow) {
     const url = await signedUrl(row.storage_path)
@@ -199,6 +232,20 @@ export default function Gallery() {
         </div>
       </div>
 
+      {picksLeft !== null && (
+        <p className="mt-2 text-sm text-ink-faint">
+          {picksLeft > 0
+            ? t('gallery.printsLeft', { n: picksLeft })
+            : t('gallery.printsDone', { n: picks.size })}
+        </p>
+      )}
+
+      {pickError && (
+        <p role="alert" className="mt-2 text-sm text-danger">
+          {pickError === 'limit' ? t('gallery.printLimit') : t('gallery.printFailed')}
+        </p>
+      )}
+
       {shown.length === 0 ? (
         <p className="mt-10 text-sm text-ink-faint">{t('gallery.empty')}</p>
       ) : (
@@ -210,10 +257,15 @@ export default function Gallery() {
                 <button
                   type="button"
                   onClick={() => void openLightbox(row)}
-                  className="block aspect-square w-full overflow-hidden rounded bg-paper-sunk"
+                  className="relative block aspect-square w-full overflow-hidden rounded bg-paper-sunk"
                 >
                   {url && (
                     <img src={url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  )}
+                  {picks.has(row.id) && (
+                    <span className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-ink/80 text-[11px] text-paper-raised">
+                      ✓
+                    </span>
                   )}
                 </button>
               </li>
@@ -272,6 +324,18 @@ export default function Gallery() {
                 { day: 'numeric', month: 'short', timeZone: 'Asia/Shanghai' },
               )}
             </span>
+            <button
+              type="button"
+              onClick={() => void togglePick(lightboxRow)}
+              className={`rounded-full border px-3 py-1.5 text-sm ${
+                picks.has(lightboxRow.id)
+                  ? 'border-paper-raised bg-paper-raised text-ink'
+                  : 'border-paper-raised/40 text-paper-raised'
+              }`}
+            >
+              {picks.has(lightboxRow.id) ? t('gallery.printChosen') : t('gallery.printChoose')}
+            </button>
+
             {/* Only your own photos are yours to rename. */}
             {lightboxRow.mine && (
               <button
