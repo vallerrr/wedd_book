@@ -53,10 +53,10 @@ insert into content_blocks (key, title_en, title_zh, body_en, body_zh, position)
   ('trip_intro', 'Welcome', '欢迎',
    'Thank you for signing up to the trip with us! We decided not to have a ceremony on the banquet day, so instead we want to host a small two-day trip for the friends who travelled all this way to celebrate with us.
 
-Day one we stay in Guiyang, day two we move to Qianxi — the town where the banquet happens on the third day.',
+Day one we stay in Guiyang. Day two we visit Zhijin Cave and move on to Qianxi city, where the banquet happens on the third day.',
    '谢谢你们决定参加我们的婚礼仪式替代旅行！因为我们决定没有传统婚礼仪式，所以希望以两天短途旅行的形式招待远道而来的朋友们。
 
-第一天（26号）我们会待在贵阳，第二天（27号）在黔西县附近，第三天（28号）午宴和晚宴都在黔西。',
+第一天（26号）我们会待在贵阳，第二天（27号）去织金洞，然后到黔西市，第三天（28号）午宴和晚宴都在黔西。',
    1),
 
   ('covered', 'On us', '我们请客',
@@ -69,8 +69,12 @@ Day one we stay in Guiyang, day two we move to Qianxi — the town where the ban
    2),
 
   ('not_covered', 'Not covered', '需要自理的部分',
-   'Entry tickets to the sightseeing attractions. Bring your ID card or passport — you will need it to get in.',
-   '景区门票。记得带身份证或护照，进景区要用。',
+   'Entry tickets to the sightseeing attractions. Bring your ID card or passport — you will need it to get in.
+
+Students: bring your student card too. Zhijin Cave is free for students and half price for international students.',
+   '景区门票。记得带身份证或护照，进景区要用。
+
+学生的话记得也带上学生证 —— 织金洞学生免票，留学生半价。',
    3),
 
   ('guiyang_extras', 'Other things to do in Guiyang', '在贵阳还能做什么',
@@ -172,39 +176,50 @@ We have the private room on the first floor up: 「888 苗族古歌」.',
    'https://www.amap.com/search?query=%E4%BA%9A%E6%9C%B5%E8%BD%BB%E5%B1%85%E9%85%92%E5%BA%97%E8%B4%B5%E9%98%B3%E5%96%B7%E6%B0%B4%E6%B1%A0', '{}'),
 
   -- ---- Day 2, Qianxi ------------------------------------------------------
-  ('2026-09-27', 1, 'activity', 'Morning', '上午',
+  ('2026-09-27', 1, 'travel', '09:00 — please be on time', '早上9:00 · 请准时',
+   'Coach from the hotel', '大巴从酒店出发',
+   'A small coach picks us up from the hotel and takes us to Zhijin Cave, then on to Qianxi city afterwards. Bring your luggage down with you — we are not coming back to this hotel.',
+   '会有一辆小巴到酒店接我们，先去织金洞，之后直接去黔西市。记得把行李一起带下来，我们不会再回这家酒店了。',
+   '贵阳云岩喷水池地铁站亚朵轻居酒店', '贵阳市云岩区黔灵西路11号',
+   'https://www.amap.com/search?query=%E4%BA%9A%E6%9C%B5%E8%BD%BB%E5%B1%85%E9%85%92%E5%BA%97%E8%B4%B5%E9%98%B3%E5%96%B7%E6%B0%B4%E6%B1%A0', '{}'),
+
+  ('2026-09-27', 2, 'activity', 'Morning', '上午',
    'Zhijin Cave', '织金洞',
    'The most spectacular karst cave in China — 6.6 km of it, so it is a long walk, but the scale and the lighting are worth it. Karst is *the* landscape of Guizhou, so don''t miss this one.
 
 Next to the cave there is also Zhijin Canyon, and for about ¥20 you can take a ten-minute boat ride.
+
+**Bring your student card if you have one.** Entry is free for students, and half price for international students.
 
 We may only take you as far as the entrance — we need to head back and prepare.',
    '中国的“洞王”，喀斯特地貌形成的钟乳石洞。总共6.6公里，真的要走很久，但因为它巨大、灯光也做得好，非常值得逛。喀斯特是贵州的代表性地貌，推荐！
 
 旁边还有织金大峡谷，也需要走路，但很漂亮，还可以花20块钱坐10分钟的船。
 
+**学生记得带学生证。** 学生免票，留学生半价。
+
 我和 Yquem 可能只送大家到门口，因为还要回去准备婚礼的事情。',
    '织金洞', null, 'https://www.amap.com/search?query=织金洞', '{}'),
 
-  ('2026-09-27', 2, 'meal', 'Lunch', '午饭',
+  ('2026-09-27', 3, 'meal', 'Lunch', '午饭',
    'Lunch at home, or local snacks', '在家吃，或者去吃小吃',
    'Nothing formal — either something at home or we go out for local snacks.',
    '不用太正式，在家随便吃点，或者出去吃小吃。',
    null, null, null, '{}'),
 
-  ('2026-09-27', 3, 'free', 'Afternoon', '下午',
+  ('2026-09-27', 4, 'free', 'Afternoon', '下午',
    'Free time — or come and decorate', '自由活动 · 也欢迎来帮忙布置',
    'Your afternoon is your own. If you would rather be useful, we will be decorating the house and the venue, and would love the company.',
    '下午自由活动。如果你想找点事做，我们会在家里和会场布置，非常欢迎来一起！',
    null, null, null, '{}'),
 
-  ('2026-09-27', 4, 'activity', 'Late afternoon', '傍晚',
+  ('2026-09-27', 5, 'activity', 'Late afternoon', '傍晚',
    'Photo viewing at our home', '在我们家一起看照片',
    'Everyone''s bingo answers open up, and we go through them together, question by question. This is the one you have been waiting for.',
    '所有人的宾果答案都会公开，我们一题一题一起看。就是这个时候啦！',
    null, null, null, '{}'),
 
-  ('2026-09-27', 5, 'meal', 'Late dinner', '夜宵',
+  ('2026-09-27', 6, 'meal', 'Late dinner', '夜宵',
    'Dafuba street food', '大府坝小吃街',
    'The local night food street — barbecue, sweet rice dumplings, rice noodles, skewers. Properly local and always crowded, and the food is wonderful.',
    '当地很有名的小吃一条街 —— 烧烤、汤圆、米粉、串串。很local也很挤，但真的很好吃！',
