@@ -8,7 +8,7 @@
 -- ---------------------------------------------------------------------------
 insert into bingo_questions (position, prompt_en, prompt_zh) values
   (1,  'Who has a cat that wakes its owner for a late dinner', '谁有一只小猫晚上要叫醒主人陪吃'),
-  (2,  'Who is developing their own game',                     '谁在开发自己的游戏'),
+  (2,  'Who is starting their own business',                  '谁目前在创业'),
   (3,  'Who has the most colourful outfit',                    '谁的穿搭颜色最多'),
   (4,  'Who laughs the most',                                  '谁笑得最多'),
   (5,  'Who exercised with Chinese uncles in a park',          '谁和中国大爷在公园一起锻炼过'),
@@ -18,7 +18,7 @@ insert into bingo_questions (position, prompt_en, prompt_zh) values
   (9,  'Who is the best planner',                              '谁是最好的计划者'),
   (10, 'Who is an enthusiastic skydiver',                      '谁是狂热的跳伞爱好者'),
   (11, 'Who speaks the most languages',                        '谁会说最多的语言'),
-  (12, 'Who is getting married soon too (congrats!)',          '谁也快要结婚了（恭喜！）'),
+  (12, 'Who brought exam papers to mark on the trip',         '谁在旅途中还带了卷子批改'),
   (13, 'Who has been in a relationship the longest',           '谁谈恋爱的时间最长'),
   (14, 'Who can do latte art',                                 '谁会拉花'),
   (15, 'Who gets up latest in the morning',                    '谁早上起得最晚'),

@@ -4,7 +4,7 @@ import { useI18n } from '@/i18n'
 import { useAuth } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 import { processPhoto } from '@/lib/imaging'
-import { enqueuePhoto, subscribeToQueue } from '@/lib/uploadQueue'
+import { enqueuePhoto, queuedBingoThumb, subscribeToQueue } from '@/lib/uploadQueue'
 import { signedUrl } from '@/lib/photos'
 import type { Database } from '@/lib/database.types'
 
@@ -44,7 +44,16 @@ export default function BingoQuestion() {
       .neq('status', 'hidden')
       .maybeSingle()
     setAnswer(p)
-    setPreview(await signedUrl(p?.thumb_path ?? null))
+
+    // Prefer the uploaded thumbnail, but fall back to the copy still waiting
+    // in the queue. Without this a guest who shot on a weak signal saw their
+    // own answer disappear as soon as they left the screen.
+    let url = await signedUrl(p?.thumb_path ?? null)
+    if (!url && q) {
+      const local = await queuedBingoThumb(q.id)
+      if (local) url = URL.createObjectURL(local)
+    }
+    setPreview(url)
     setLoading(false)
   }, [position])
 

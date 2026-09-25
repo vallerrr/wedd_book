@@ -273,6 +273,37 @@ async function processItem(item: QueueItem) {
   if (error) throw new Error(error.message)
 }
 
+/**
+ * The thumbnail still sitting in the queue for a bingo question, if any.
+ *
+ * A guest's own bingo answer is supposed to be visible to them immediately,
+ * but until the bytes reach Storage there is nothing to sign a URL for — so
+ * the screen went blank the moment they navigated away and back. The local
+ * copy is right here; use it until the upload lands.
+ */
+export async function queuedBingoThumb(questionId: string): Promise<Blob | null> {
+  try {
+    const items = await (await db()).getAll('queue')
+    const hit = items.find((i) => i.kind === 'bingo' && i.questionId === questionId)
+    return hit?.thumb ?? null
+  } catch {
+    return null
+  }
+}
+
+/** Every queued bingo thumbnail, keyed by question — for the grid. */
+export async function queuedBingoThumbs(): Promise<Map<string, Blob>> {
+  const out = new Map<string, Blob>()
+  try {
+    for (const i of await (await db()).getAll('queue')) {
+      if (i.kind === 'bingo' && i.questionId) out.set(i.questionId, i.thumb)
+    }
+  } catch {
+    // No local queue is fine — the signed URLs cover the uploaded ones.
+  }
+  return out
+}
+
 export function clearRejection() {
   lastRejection = null
   void notify()
