@@ -23,6 +23,7 @@ export default function BingoQuestion() {
   const [answer, setAnswer] = useState<Photo | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [failed, setFailed] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
@@ -70,6 +71,7 @@ export default function BingoQuestion() {
     e.target.value = ''
     if (!file || !question || !guest) return
     setBusy(true)
+    setFailed(null)
     try {
       const processed = await processPhoto(file)
       // Show it immediately; unlike the disposable camera, a bingo answer is
@@ -86,6 +88,11 @@ export default function BingoQuestion() {
         height: processed.height,
         bytes: processed.bytes,
       })
+    } catch (err) {
+      // Previously an unhandled rejection: the answer vanished with no hint
+      // that anything had gone wrong.
+      console.error('[bingo] could not save answer', err)
+      setFailed(err instanceof Error ? err.message : String(err))
     } finally {
       setBusy(false)
     }
@@ -151,6 +158,13 @@ export default function BingoQuestion() {
         onChange={(e) => void onFile(e, 'upload')}
         className="hidden"
       />
+
+      {failed && (
+        <p role="alert" className="mt-4 text-sm text-danger">
+          {t('bingo.saveFailed')}
+          <span className="mt-1 block text-[10px] text-ink-faint">{failed}</span>
+        </p>
+      )}
 
       <p className="mt-6 text-xs text-ink-faint">{t('bingo.privateHint')}</p>
     </div>

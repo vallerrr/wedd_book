@@ -184,6 +184,12 @@ export default function Camera() {
       }
       setJustSaved(true)
       setTimeout(() => setJustSaved(false), 1600)
+    } catch (err) {
+      // Anything thrown here — a photo the phone cannot decode, storage that
+      // is full — used to escape as an unhandled rejection, so the button
+      // looked like it had simply ignored the tap.
+      console.error('[camera] upload failed', err)
+      setRejection(err instanceof Error ? err.message : 'upload_failed')
     } finally {
       setBusy(false)
     }
@@ -291,6 +297,12 @@ export default function Camera() {
           <button onClick={clearRejection} className="underline underline-offset-4">
             {t('app.cancel')}
           </button>
+          {/* The raw reason, small and last. Nobody reads it at a wedding, but
+              a guest can photograph it and send it to us, which beats
+              diagnosing a phone we cannot touch. */}
+          {!rejection.includes('quota_exceeded') && (
+            <span className="mt-1 block text-[10px] text-ink-faint">{rejection}</span>
+          )}
         </p>
       )}
 
