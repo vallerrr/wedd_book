@@ -15,6 +15,7 @@ export default function BingoQuestion() {
   const { position } = useParams()
   const { t, pick } = useI18n()
   const { guest } = useAuth()
+  const guestId = guest?.id ?? null
 
   const cameraInput = useRef<HTMLInputElement>(null)
   const libraryInput = useRef<HTMLInputElement>(null)
@@ -49,14 +50,19 @@ export default function BingoQuestion() {
     // Prefer the uploaded thumbnail, but fall back to the copy still waiting
     // in the queue. Without this a guest who shot on a weak signal saw their
     // own answer disappear as soon as they left the screen.
+    //
+    // Only when this guest actually has a row for the question, and only from
+    // their own queued items. Falling back on a null row meant a guest who
+    // had not answered yet was shown whatever sat in this browser's queue —
+    // which on a shared phone was somebody else's private answer.
     let url = await signedUrl(p?.thumb_path ?? null)
-    if (!url && q) {
-      const local = await queuedBingoThumb(q.id)
+    if (!url && p && guestId) {
+      const local = await queuedBingoThumb(q.id, guestId)
       if (local) url = URL.createObjectURL(local)
     }
     setPreview(url)
     setLoading(false)
-  }, [position])
+  }, [position, guestId])
 
   useEffect(() => {
     void load()

@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { supabase } from './supabase'
-import { setIdentityRecovery, startQueueWatcher } from './uploadQueue'
+import { setCurrentGuest, setIdentityRecovery, startQueueWatcher } from './uploadQueue'
 import type { Database } from './database.types'
 
 export type Guest = Database['public']['Tables']['guests']['Row']
@@ -109,6 +109,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // The upload queue calls this when an upload comes back not_a_guest.
   useEffect(() => setIdentityRecovery(recover), [recover])
+
+  // And this to check whose photos it is allowed to send. Kept in a ref so
+  // the queue always reads the identity as it is now, not as it was when the
+  // watcher started.
+  const guestIdRef = useRef<string | null>(null)
+  guestIdRef.current = state.status === 'redeemed' ? state.guest.id : null
+  useEffect(() => setCurrentGuest(() => guestIdRef.current), [])
 
   /** Look up the guest row bound to the current session, if any. */
   const loadGuest = useCallback(async () => {

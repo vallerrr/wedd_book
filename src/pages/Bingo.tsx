@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useI18n } from '@/i18n'
+import { useAuth } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 import { signedUrls } from '@/lib/photos'
 import { queuedBingoThumbs, subscribeToQueue } from '@/lib/uploadQueue'
@@ -11,6 +12,8 @@ type Photo = Database['public']['Tables']['photos']['Row']
 
 export default function Bingo() {
   const { t, pick } = useI18n()
+  const { guest } = useAuth()
+  const guestId = guest?.id ?? null
   const [questions, setQuestions] = useState<Question[]>([])
   const [answers, setAnswers] = useState<Photo[]>([])
   const [thumbs, setThumbs] = useState<Map<string, string>>(new Map())
@@ -33,19 +36,24 @@ export default function Bingo() {
       const signed = await signedUrls((a.data ?? []).map((p) => p.thumb_path))
 
       // Anything still queued has no signed URL yet; show the local blob so a
-      // tile the guest has already answered never looks empty.
-      const local = await queuedBingoThumbs()
-      for (const [questionId, blob] of local) {
-        const photo = (a.data ?? []).find((p) => p.question_id === questionId)
-        const key = photo?.thumb_path
-        if (key && !signed.has(key)) signed.set(key, URL.createObjectURL(blob))
+      // tile the guest has already answered never looks empty. Scoped to this
+      // guest: one browser can hold another guest's queued photos.
+      if (guestId) {
+        const local = await queuedBingoThumbs(guestId)
+        for (const [questionId, blob] of local) {
+          // Only for a question this guest genuinely has a row for; the row is
+          // what proves the answer is theirs.
+          const photo = (a.data ?? []).find((p) => p.question_id === questionId)
+          const key = photo?.thumb_path
+          if (key && !signed.has(key)) signed.set(key, URL.createObjectURL(blob))
+        }
       }
       if (!cancelled) setThumbs(signed)
     })()
     return () => {
       cancelled = true
     }
-  }, [reloadKey])
+  }, [reloadKey, guestId])
 
   // When the queue empties, the uploaded thumbnails exist — reload so the
   // grid stops relying on local blobs.

@@ -191,6 +191,22 @@ export function setIdentityRecovery(fn: () => Promise<boolean>) {
 }
 
 /**
+ * Who this device is signed in as right now. Also supplied by the auth layer.
+ *
+ * The RPCs derive the owner from the session, never from the queue item, so a
+ * photo drains under whoever happens to be signed in when the connection
+ * returns. On a shared phone that silently re-attributed one guest's bingo
+ * answer to another — it appeared, correctly stored, as the wrong person's
+ * private answer. Items are now only sent while their owner is the one
+ * signed in; everyone else's simply wait.
+ */
+let currentGuestId: (() => string | null) | null = null
+
+export function setCurrentGuest(fn: () => string | null) {
+  currentGuestId = fn
+}
+
+/**
  * Nothing in here may wait forever.
  *
  * fetch has no default timeout, and a phone that has drifted off hotel wifi
@@ -240,7 +256,13 @@ export async function processQueue(): Promise<void> {
     const database = await db()
     const items = await database.getAllFromIndex('queue', 'createdAt')
 
+    const signedInAs = currentGuestId?.() ?? null
+
     for (const item of items) {
+      // Never upload on someone else's behalf. Leave it queued: the owner
+      // signing back in on this device is what releases it.
+      if (!signedInAs || item.guestId !== signedInAs) continue
+
       try {
         await processItem(item)
         await database.delete('queue', item.id)
@@ -398,23 +420,36 @@ async function processItem(item: QueueItem) {
  * but until the bytes reach Storage there is nothing to sign a URL for — so
  * the screen went blank the moment they navigated away and back. The local
  * copy is right here; use it until the upload lands.
+ *
+ * guestId is required, not optional. One browser can hold queued photos for
+ * more than one guest — a shared phone, or a code re-redeemed on a device
+ * someone else had used — and IndexedDB is per-browser, not per-identity.
+ * Without this filter the fallback showed whoever's copy happened to be in
+ * the queue, which is a private answer shown to the wrong person.
  */
-export async function queuedBingoThumb(questionId: string): Promise<Blob | null> {
+export async function queuedBingoThumb(
+  questionId: string,
+  guestId: string,
+): Promise<Blob | null> {
   try {
     const items = await (await db()).getAll('queue')
-    const hit = items.find((i) => i.kind === 'bingo' && i.questionId === questionId)
+    const hit = items.find(
+      (i) => i.kind === 'bingo' && i.questionId === questionId && i.guestId === guestId,
+    )
     return hit ? toBlob(hit.thumb) : null
   } catch {
     return null
   }
 }
 
-/** Every queued bingo thumbnail, keyed by question — for the grid. */
-export async function queuedBingoThumbs(): Promise<Map<string, Blob>> {
+/** Every queued bingo thumbnail for this guest, keyed by question. */
+export async function queuedBingoThumbs(guestId: string): Promise<Map<string, Blob>> {
   const out = new Map<string, Blob>()
   try {
     for (const i of await (await db()).getAll('queue')) {
-      if (i.kind === 'bingo' && i.questionId) out.set(i.questionId, toBlob(i.thumb))
+      if (i.kind === 'bingo' && i.questionId && i.guestId === guestId) {
+        out.set(i.questionId, toBlob(i.thumb))
+      }
     }
   } catch {
     // No local queue is fine — the signed URLs cover the uploaded ones.
