@@ -22,14 +22,36 @@ import { supabase } from './supabase'
  * resumes rather than restarting or double-spending.
  */
 
+/**
+ * A photo as it is written to IndexedDB.
+ *
+ * Deliberately raw bytes and not a Blob. WebKit fails to structured-clone a
+ * Blob into an object store in several situations — reliably in Private
+ * Browsing, intermittently otherwise — and throws "Error preparing Blob/File
+ * data to be stored in object store". Since the queue stores the photo before
+ * it touches the network, that one throw killed every upload path at step
+ * one: no photo, no credit spent, nothing sent. An ArrayBuffer clones
+ * everywhere, so we carry the bytes and rebuild the Blob on the way out.
+ */
+export type StoredBytes = { buf: ArrayBuffer; type: string }
+
+async function toStored(blob: Blob): Promise<StoredBytes> {
+  return { buf: await blob.arrayBuffer(), type: blob.type || 'image/jpeg' }
+}
+
+/** Accepts either shape, so photos queued by an older build still upload. */
+function toBlob(value: Blob | StoredBytes): Blob {
+  return value instanceof Blob ? value : new Blob([value.buf], { type: value.type })
+}
+
 export type QueueItem = {
   id: string
   kind: 'disposable' | 'bingo'
   source: 'capture' | 'upload'
   questionId: string | null
   guestId: string
-  full: Blob
-  thumb: Blob
+  full: Blob | StoredBytes
+  thumb: Blob | StoredBytes
   width: number
   height: number
   bytes: number
@@ -110,8 +132,8 @@ export async function enqueuePhoto(input: {
     source: input.source,
     questionId: input.questionId ?? null,
     guestId: input.guestId,
-    full: input.full,
-    thumb: input.thumb,
+    full: await toStored(input.full),
+    thumb: await toStored(input.thumb),
     width: input.width,
     height: input.height,
     bytes: input.bytes,
@@ -125,7 +147,20 @@ export async function enqueuePhoto(input: {
     createdAt: Date.now(),
   }
 
-  await (await db()).put('queue', item)
+  try {
+    await (await db()).put('queue', item)
+  } catch (e) {
+    // Private Browsing can refuse the write outright. Persisting is what
+    // makes the queue survive a closed tab, but it is not what makes the
+    // photo upload — so fall back to sending it straight out of memory
+    // rather than losing it. A failure here has nothing to resume from, so
+    // it propagates and the screen says so.
+    console.warn('[queue] could not persist; uploading directly', e)
+    await processItem(item)
+    await notify()
+    return id
+  }
+
   await notify()
   void processQueue()
   return id
@@ -296,7 +331,14 @@ async function processItem(item: QueueItem) {
   let current = { ...item }
   const save = async (patch: Partial<QueueItem>) => {
     current = { ...current, ...patch }
-    await (await db()).put('queue', current)
+    try {
+      await (await db()).put('queue', current)
+    } catch (e) {
+      // Best effort. In-memory `current` still drives the rest of this run,
+      // and an item that was never persisted has no retry to stay consistent
+      // with, so a failed checkpoint must not abort the upload.
+      console.warn('[queue] checkpoint failed', e)
+    }
   }
 
   // 1. Spend the credit and create the row, once and only once.
@@ -332,12 +374,12 @@ async function processItem(item: QueueItem) {
 
   // 2. Upload the bytes.
   if (!current.fullUploaded) {
-    await uploadOnce(current.storagePath, current.full)
+    await uploadOnce(current.storagePath, toBlob(current.full))
     await save({ fullUploaded: true })
   }
 
   if (!current.thumbUploaded) {
-    await uploadOnce(current.thumbPath, current.thumb)
+    await uploadOnce(current.thumbPath, toBlob(current.thumb))
     await save({ thumbUploaded: true })
   }
 
@@ -361,7 +403,7 @@ export async function queuedBingoThumb(questionId: string): Promise<Blob | null>
   try {
     const items = await (await db()).getAll('queue')
     const hit = items.find((i) => i.kind === 'bingo' && i.questionId === questionId)
-    return hit?.thumb ?? null
+    return hit ? toBlob(hit.thumb) : null
   } catch {
     return null
   }
@@ -372,7 +414,7 @@ export async function queuedBingoThumbs(): Promise<Map<string, Blob>> {
   const out = new Map<string, Blob>()
   try {
     for (const i of await (await db()).getAll('queue')) {
-      if (i.kind === 'bingo' && i.questionId) out.set(i.questionId, i.thumb)
+      if (i.kind === 'bingo' && i.questionId) out.set(i.questionId, toBlob(i.thumb))
     }
   } catch {
     // No local queue is fine — the signed URLs cover the uploaded ones.
