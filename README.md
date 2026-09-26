@@ -69,7 +69,7 @@ The slideshow, bulk-export UI and guestbook are droppable, in that order.
 | **Invite codes** | 3-character code redeemed onto a Supabase anonymous session |
 | **Disposable camera** | Truly blind: no viewfinder, and you never see your own shots until reveal |
 | **Daily quota** | 20 credits/guest/day. In-app capture costs 1, camera-roll upload costs 2 |
-| **Bingo** | 16 shared prompts, one private answer per guest per question, quota-free |
+| **Bingo** | 18 shared prompts, one private answer per guest per question, quota-free |
 | **Review night** | The couple opens everyone's bingo answers, browsed question by question |
 | **Gallery** | Admin-controlled reveal, per-photo named or anonymous |
 
@@ -132,7 +132,7 @@ src/
   admin/        the couple's panel — one lazy chunk, never shipped to guests
 supabase/
   migrations/   schema, then functions + RLS
-  seed.sql      the 16 bingo prompts and the three days
+  seed.sql      the 18 bingo prompts and the three days
 scripts/
   verify-rls.mjs
 ```

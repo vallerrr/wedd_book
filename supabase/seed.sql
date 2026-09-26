@@ -22,7 +22,9 @@ insert into bingo_questions (position, prompt_en, prompt_zh) values
   (13, 'Who has been in a relationship the longest',           '谁谈恋爱的时间最长'),
   (14, 'Who can do latte art',                                 '谁会拉花'),
   (15, 'Who gets up latest in the morning',                    '谁早上起得最晚'),
-  (16, 'Whose feet overlap when they sit and think',           '谁思考时（坐着的时候）双脚会重叠')
+  (16, 'Whose feet overlap when they sit and think',           '谁思考时（坐着的时候）双脚会重叠'),
+  (17, 'Who has been married the longest',                     '谁结婚的时间最长'),
+  (18, 'Who knows the pet industry best',                      '谁最了解宠物产业')
 on conflict (position) do update
   set prompt_en = excluded.prompt_en,
       prompt_zh = excluded.prompt_zh;
