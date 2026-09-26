@@ -139,10 +139,20 @@ export async function enqueuePhoto(input: {
 function isTerminal(message: string) {
   return (
     message.includes('quota_exceeded') ||
-    message.includes('not_a_guest') ||
     message.includes('bad_source') ||
     message.includes('unknown_question')
   )
+}
+
+/**
+ * Re-bind this session to the guest it thinks it is. Supplied by the auth
+ * layer, which owns the cached invite code; registering it here rather than
+ * importing it keeps the dependency pointing one way.
+ */
+let recoverIdentity: (() => Promise<boolean>) | null = null
+
+export function setIdentityRecovery(fn: () => Promise<boolean>) {
+  recoverIdentity = fn
 }
 
 let running = false
@@ -162,6 +172,23 @@ export async function processQueue(): Promise<void> {
         await notify()
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e)
+
+        // guests.auth_user_id holds exactly one session, so re-opening the
+        // invite link anywhere else — most often the WeChat browser, because
+        // that is where the link was sent — moves the binding and leaves this
+        // device authenticated but nameless. It still looks signed in: the
+        // guest row is cached and the credit counter still reads full. Every
+        // upload then failed with not_a_guest, which used to count as
+        // terminal, so the queue deleted the photo. Re-redeem and keep the
+        // bytes; this pass stops either way and the next one retries.
+        if (message.includes('not_a_guest')) {
+          const healed = recoverIdentity ? await recoverIdentity() : false
+          if (!healed) {
+            lastRejection = message
+            await notify()
+          }
+          break
+        }
 
         if (isTerminal(message)) {
           // The credit was never spent (the RPC is what spends it), or the

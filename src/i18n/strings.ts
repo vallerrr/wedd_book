@@ -63,6 +63,7 @@ export const strings = {
     'camera.blindHint': '看不到取景画面 —— 就像真的一次性相机。拍完当天不会显示，之后统一揭晓。',
     'camera.creditsLeft': '今天还剩 {n} 张',
     'camera.noCredits': '今天的额度用完了，明天再来',
+    'camera.uploadStuck': '照片已保存在手机里，但还没上传成功。请保持这个页面打开，连上网络后会自动上传。',
     'camera.shoot': '拍摄',
     'camera.upload': '从相册上传（消耗 2 张额度）',
     'camera.saved': '已保存',
@@ -173,6 +174,8 @@ export const strings = {
       "There's no viewfinder — just like a real disposable. You won't see these until they're revealed.",
     'camera.creditsLeft': '{n} shots left today',
     'camera.noCredits': "You've used today's roll. More tomorrow.",
+    'camera.uploadStuck':
+      "Your photos are safe on this phone but haven't uploaded yet. Keep this page open — they'll go up once you're back online.",
     'camera.shoot': 'Shoot',
     'camera.upload': 'Upload from library (costs 2)',
     'camera.saved': 'Saved',

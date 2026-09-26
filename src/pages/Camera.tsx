@@ -275,9 +275,15 @@ export default function Camera() {
 
       {out && <p className="mt-4 text-center text-sm text-ink-muted">{t('camera.noCredits')}</p>}
 
-      {rejection?.includes('quota_exceeded') && (
+      {/* Anything the queue gives up on has to be said out loud. A rejection
+          that only rendered for quota_exceeded meant an identity that had
+          stopped resolving looked exactly like a working camera: the shutter
+          fired, the counter moved, and the photo quietly went nowhere. */}
+      {rejection && (
         <p role="alert" className="mt-4 text-center text-sm text-danger">
-          {t('camera.noCredits')}{' '}
+          {rejection.includes('quota_exceeded')
+            ? t('camera.noCredits')
+            : t('camera.uploadStuck')}{' '}
           <button onClick={clearRejection} className="underline underline-offset-4">
             {t('app.cancel')}
           </button>

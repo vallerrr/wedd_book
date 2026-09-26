@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { supabase } from './supabase'
-import { startQueueWatcher } from './uploadQueue'
+import { setIdentityRecovery, startQueueWatcher } from './uploadQueue'
 import type { Database } from './database.types'
 
 export type Guest = Database['public']['Tables']['guests']['Row']
@@ -76,6 +76,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // all twenty guests share on hotel wifi.
   const inFlight = useRef<Promise<Awaited<ReturnType<AuthValue['redeem']>>> | null>(null)
 
+  /**
+   * Re-claim the guest this device already believes it is.
+   *
+   * Only one session at a time can be bound to a guest row, so whenever the
+   * invite link is opened somewhere else the binding moves and this device is
+   * left holding a valid token that resolves to nobody. The cached guest row
+   * carries the invite code, so the repair is just redeeming it again — no
+   * typing, no QR card, no admin. Returns whether the device is a guest again.
+   */
+  const recover = useCallback(async (): Promise<boolean> => {
+    const cached = readCachedGuest()
+    if (!cached?.invite_code) return false
+    try {
+      const { data: existing } = await supabase.auth.getSession()
+      if (!existing.session) {
+        const { error } = await supabase.auth.signInAnonymously()
+        if (error) return false
+      }
+      const { data, error } = await supabase.rpc('redeem_invite_code', {
+        p_code: cached.invite_code,
+      })
+      if (error || !data) return false
+      const guest = data as unknown as Guest
+      cacheGuest(guest)
+      setState({ status: 'redeemed', guest })
+      return true
+    } catch {
+      return false
+    }
+  }, [])
+
+  // The upload queue calls this when an upload comes back not_a_guest.
+  useEffect(() => setIdentityRecovery(recover), [recover])
+
   /** Look up the guest row bound to the current session, if any. */
   const loadGuest = useCallback(async () => {
     const { data: sessionData } = await supabase.auth.getSession()
@@ -93,6 +127,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
 
+    // Signed in, no error, but bound to no guest: the binding moved to another
+    // browser. Take it back before deciding this is a stranger, otherwise a
+    // guest who tapped their own link twice is sent back to the code screen
+    // with photos still queued under an identity that no longer resolves.
+    if (!error && (await recover())) return
+
     // A failed request is not the same as "no such guest". Treating it as one
     // signed guests out the moment they lost signal — which is exactly when
     // they are inside Zhijin Cave wanting to take photos. Fall back to the
@@ -106,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setState({ status: 'anonymous', guest: null })
-  }, [])
+  }, [recover])
 
   useEffect(() => {
     void loadGuest()
