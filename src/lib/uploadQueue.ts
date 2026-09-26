@@ -155,11 +155,51 @@ export function setIdentityRecovery(fn: () => Promise<boolean>) {
   recoverIdentity = fn
 }
 
+/**
+ * Nothing in here may wait forever.
+ *
+ * fetch has no default timeout, and a phone that has drifted off hotel wifi
+ * without noticing will leave a request hanging indefinitely rather than
+ * failing. One hung upload used to latch `running` on for good: every later
+ * kick returned at the guard, so the queue was dead for the rest of the
+ * session — no photos, no bingo answers, and a credit counter frozen at
+ * whatever it last read. Losing a slow request and retrying costs nothing,
+ * because every step is idempotent.
+ */
+const STEP_TIMEOUT_MS = 20_000
+
+// PromiseLike, not Promise: supabase-js query builders are thenables that only
+// dispatch the request when awaited, so they do not satisfy Promise.
+function withTimeout<T>(work: PromiseLike<T>, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`timeout:${label}`)), STEP_TIMEOUT_MS)
+    Promise.resolve(work).then(
+      (v) => {
+        clearTimeout(timer)
+        resolve(v)
+      },
+      (e: unknown) => {
+        clearTimeout(timer)
+        reject(e instanceof Error ? e : new Error(String(e)))
+      },
+    )
+  })
+}
+
 let running = false
+let runStartedAt = 0
+
+/** Longest a whole pass may plausibly take before we assume it died. */
+const RUN_WATCHDOG_MS = 5 * 60_000
 
 export async function processQueue(): Promise<void> {
-  if (running || !navigator.onLine) return
+  // Belt and braces alongside the per-step timeout: if a pass somehow stops
+  // without clearing the flag, later kicks must still get through.
+  if (running && Date.now() - runStartedAt < RUN_WATCHDOG_MS) return
+  if (!navigator.onLine) return
   running = true
+  const myRun = Date.now()
+  runStartedAt = myRun
 
   try {
     const database = await db()
@@ -217,7 +257,10 @@ export async function processQueue(): Promise<void> {
       }
     }
   } finally {
-    running = false
+    // Only the newest pass may clear the flag. A pass the watchdog gave up on
+    // can still return later, and it must not unlock a run that has since
+    // started.
+    if (runStartedAt === myRun) running = false
   }
 }
 
@@ -232,9 +275,10 @@ export async function processQueue(): Promise<void> {
  * treating that as success keeps retries idempotent.
  */
 async function uploadOnce(path: string, blob: Blob) {
-  const { error } = await supabase.storage
-    .from('photos')
-    .upload(path, blob, { contentType: 'image/jpeg' })
+  const { error } = await withTimeout(
+    supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg' }),
+    'upload',
+  )
   if (!error) return
 
   const message = error.message.toLowerCase()
@@ -257,9 +301,9 @@ async function processItem(item: QueueItem) {
 
   // 1. Spend the credit and create the row, once and only once.
   if (!current.photoId) {
-    const { data, error } =
+    const { data, error } = await withTimeout(
       item.kind === 'bingo'
-        ? await supabase.rpc('upsert_bingo_photo', {
+        ? supabase.rpc('upsert_bingo_photo', {
             p_question_id: item.questionId!,
             p_source: item.source,
             p_storage_path: item.storagePath,
@@ -268,14 +312,16 @@ async function processItem(item: QueueItem) {
             p_height: item.height,
             p_bytes: item.bytes,
           })
-        : await supabase.rpc('create_disposable_photo', {
+        : supabase.rpc('create_disposable_photo', {
             p_source: item.source,
             p_storage_path: item.storagePath,
             p_thumb_path: item.thumbPath,
             p_width: item.width,
             p_height: item.height,
             p_bytes: item.bytes,
-          })
+          }),
+      'create',
+    )
 
     if (error) throw new Error(error.message)
 
@@ -296,7 +342,10 @@ async function processItem(item: QueueItem) {
   }
 
   // 3. Flip the row to ready.
-  const { error } = await supabase.rpc('mark_photo_ready', { p_photo_id: current.photoId! })
+  const { error } = await withTimeout(
+    supabase.rpc('mark_photo_ready', { p_photo_id: current.photoId! }),
+    'ready',
+  )
   if (error) throw new Error(error.message)
 }
 

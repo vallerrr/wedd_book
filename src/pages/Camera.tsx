@@ -60,8 +60,12 @@ export default function Camera() {
     return subscribeToQueue((s) => {
       setPending(s.pending)
       setRejection(s.lastRejection)
-      // A drained queue may mean credits moved (or were refunded).
-      if (s.pending === 0) void refreshCredits()
+      // Refresh on every queue event, not only on an empty queue. Credits are
+      // spent per photo as the RPC runs, so waiting for the whole queue to
+      // drain left the counter reading full for as long as anything was still
+      // in flight — and stuck at the old number for good if one photo could
+      // not finish. This RPC is a single integer.
+      void refreshCredits()
     })
   }, [refreshCredits])
 
